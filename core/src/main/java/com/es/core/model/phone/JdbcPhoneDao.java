@@ -3,11 +3,9 @@ package com.es.core.model.phone;
 import com.es.core.model.rowmapper.IdToLongRowMapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -16,7 +14,6 @@ import java.util.*;
 public class JdbcPhoneDao implements PhoneDao {
     @Resource
     private JdbcTemplate jdbcTemplate;
-    private final String colorsField = "colors";
 
     public Optional<Phone> get(final Long key) {
         Optional<Phone> phone = jdbcTemplate.query("select * from phones where id = '" + key + "'", new BeanPropertyRowMapper(Phone.class))
@@ -45,6 +42,15 @@ public class JdbcPhoneDao implements PhoneDao {
         } else {
             String query = getUpdateQuery(phone);
             jdbcTemplate.update(query);
+        }
+        saveColor(phone);
+    }
+
+    private void saveColor(final Phone phone) {
+        jdbcTemplate.update("delete from phone2color where phoneId = " + phone.getId());
+        for (Color color : phone.getColors()) {
+            jdbcTemplate.update("insert into phone2color (phoneId, colorId)" +
+                    "values(" + phone.getId() + ", " + color.getId() + ")");
         }
     }
 
@@ -117,6 +123,20 @@ public class JdbcPhoneDao implements PhoneDao {
     }
 
     public List<Phone> findAll(int offset, int limit) {
-        return jdbcTemplate.query("select * from phones offset " + offset + " limit " + limit, new BeanPropertyRowMapper(Phone.class));
+        List<Phone> phones = jdbcTemplate.query("select * from phones offset " + offset + " limit " + limit, new BeanPropertyRowMapper(Phone.class));
+        for (Phone phone : phones) {
+            List<Long> colorIds = jdbcTemplate.query("select colorId from phone2color where phoneId = " + phone.getId(),
+                    new IdToLongRowMapper("colorId"));
+            Set<Color> colors = new HashSet<>();
+            for (Long colorId : colorIds) {
+                colors.add(jdbcTemplate.query("select * from colors where id = '" + colorId + "'",
+                                new BeanPropertyRowMapper<>(Color.class))
+                        .stream()
+                        .findFirst()
+                        .get());
+            }
+            phone.setColors(colors);
+        }
+        return phones;
     }
 }

@@ -21,7 +21,8 @@
     </bean>
 
     <jdbc:initialize-database enabled="true" data-source="dataSource">
-        <jdbc:script location="classpath:db/testdemodata.sql" />
+        <jdbc:script location="classpath:db/schema-test.sql"/>
+        <jdbc:script location="classpath:db/demodata-test.sql" />
     </jdbc:initialize-database>
 
 </beans>
