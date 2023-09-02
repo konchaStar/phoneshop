@@ -9,13 +9,17 @@ import javax.annotation.Resource;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Component
 public class JdbcPhoneDao implements PhoneDao {
     @Resource
     private JdbcTemplate jdbcTemplate;
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     public Optional<Phone> get(final Long key) {
+        lock.readLock().lock();
         Optional<Phone> phone = jdbcTemplate.query("select * from phones where id = '" + key + "'", new BeanPropertyRowMapper(Phone.class))
                 .stream()
                 .findFirst();
@@ -31,10 +35,12 @@ public class JdbcPhoneDao implements PhoneDao {
             }
             phone.get().setColors(colors);
         }
+        lock.readLock().unlock();
         return phone;
     }
 
     public void save(final Phone phone) {
+        lock.writeLock().lock();
         if (jdbcTemplate.query("select * from phones where id = '" + phone.getId() + "'",
                 new BeanPropertyRowMapper<>(Phone.class)).isEmpty()) {
             String query = getInsertQuery(phone);
@@ -44,6 +50,7 @@ public class JdbcPhoneDao implements PhoneDao {
             jdbcTemplate.update(query);
         }
         saveColor(phone);
+        lock.writeLock().unlock();
     }
 
     private void saveColor(final Phone phone) {
@@ -123,6 +130,7 @@ public class JdbcPhoneDao implements PhoneDao {
     }
 
     public List<Phone> findAll(int offset, int limit) {
+        lock.readLock().lock();
         List<Phone> phones = jdbcTemplate.query("select * from phones offset " + offset + " limit " + limit, new BeanPropertyRowMapper(Phone.class));
         for (Phone phone : phones) {
             List<Long> colorIds = jdbcTemplate.query("select colorId from phone2color where phoneId = " + phone.getId(),
@@ -137,6 +145,7 @@ public class JdbcPhoneDao implements PhoneDao {
             }
             phone.setColors(colors);
         }
+        lock.readLock().unlock();
         return phones;
     }
 }
