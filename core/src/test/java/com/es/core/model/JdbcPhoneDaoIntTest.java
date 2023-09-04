@@ -4,6 +4,7 @@ import com.es.core.model.phone.Color;
 import com.es.core.model.phone.Phone;
 import com.es.core.model.phone.PhoneDao;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +23,8 @@ public class JdbcPhoneDaoIntTest {
     private Color black;
     private Color purple;
     private Color green;
-
-    {
+    @Before
+    public void init() {
         black = new Color();
         black.setCode("Black");
         black.setId(1000L);
@@ -41,7 +42,8 @@ public class JdbcPhoneDaoIntTest {
         String expectedModel = "ARCHOS 101 G9";
         Assert.assertEquals(expectedModel, phone.get().getModel());
         for (Color color : phone.get().getColors()) {
-            Assert.assertTrue(color.equals(black) || color.equals(purple));
+            Assert.assertTrue(color.getId().equals(black.getId())
+                    || color.getId().equals(purple.getId()));
         }
         Assert.assertEquals(2, phone.get().getColors().size());
     }
@@ -56,7 +58,7 @@ public class JdbcPhoneDaoIntTest {
         Phone actualPhone = phoneDao.get(1000L).get();
         Assert.assertEquals(phone.getModel(), actualPhone.getModel());
         for (Color color : actualPhone.getColors()) {
-            Assert.assertTrue(color.equals(green));
+            Assert.assertTrue(color.getId().equals(green.getId()));
         }
         Assert.assertEquals(1, actualPhone.getColors().size());
     }
@@ -77,7 +79,8 @@ public class JdbcPhoneDaoIntTest {
         List<Phone> phones = phoneDao.findAll(0, 4);
         Assert.assertEquals(4, phones.size());
         for (Color color : phones.get(0).getColors()) {
-            Assert.assertTrue(color.equals(black) || color.equals(purple));
+            Assert.assertTrue(color.getId().equals(black.getId())
+                    || color.getId().equals(purple.getId()));
         }
     }
 }

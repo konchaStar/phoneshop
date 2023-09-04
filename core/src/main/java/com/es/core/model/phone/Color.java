@@ -19,16 +19,4 @@ public class Color {
     public void setCode(final String code) {
         this.code = code;
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!this.getClass().equals(obj.getClass())) {
-            return false;
-        }
-        Color color = (Color) obj;
-        return this.code.equals(color.code) && this.id.equals(color.id);
-    }
 }

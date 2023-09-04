@@ -8,16 +8,20 @@
                            http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd">
 
     <context:component-scan base-package="com.es.core" />
+    <context:property-placeholder location="./../web/src/main/webapp/WEB-INF/conf/application.properties"/>
 
-    <bean id="dataSource" class="com.es.core.db.PropertyDriverManagerDataResource">
-        <constructor-arg value="./../web/src/main/webapp/WEB-INF/conf/application.properties"/>
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${db.driver}"/>
+        <property name="username" value="${db.user}"/>
+        <property name="password" value="${db.password}"/>
+        <property name="url" value="${db.url}"/>
     </bean>
 
     <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
         <property name="dataSource" ref="dataSource" />
     </bean>
 
-    <jdbc:initialize-database enabled="true" data-source="dataSource">
+    <jdbc:initialize-database enabled="${db.insertSchema}" data-source="dataSource">
         <jdbc:script location="classpath:db/schema.sql" />
     </jdbc:initialize-database>
 </beans>
