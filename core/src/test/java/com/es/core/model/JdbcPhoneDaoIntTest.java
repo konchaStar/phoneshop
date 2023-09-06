@@ -40,7 +40,9 @@ public class JdbcPhoneDaoIntTest {
     public void getPhoneTest() {
         Optional<Phone> phone = phoneDao.get(1000L);
         String expectedModel = "ARCHOS 101 G9";
+        Long expectedId = 1000L;
         Assert.assertEquals(expectedModel, phone.get().getModel());
+        Assert.assertEquals(expectedId, phone.get().getId());
         for (Color color : phone.get().getColors()) {
             Assert.assertTrue(color.getId().equals(black.getId())
                     || color.getId().equals(purple.getId()));
@@ -70,7 +72,8 @@ public class JdbcPhoneDaoIntTest {
         phone.setModel("Samsung galaxy");
         phone.setBrand("Samsung");
         phoneDao.save(phone);
-        Phone actualPhone = phoneDao.get(1100L).get();
+        Long expectedId = 1005L;
+        Phone actualPhone = phoneDao.get(expectedId).get();
         Assert.assertEquals(phone.getId(), actualPhone.getId());
     }
 

@@ -1,112 +1,93 @@
 package com.es.core.model.phone;
 
-import com.es.core.model.rowmapper.IdToLongRowMapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 @Component
 public class JdbcPhoneDao implements PhoneDao {
     private final static String SELECT_PHONE_QUERY = "select * from phones where id = ?";
-    private final static String SELECT_PHONE2_COLOR_QUERY = "select colorId from phone2color where phoneId = ?";
-    private final static String SELECT_COLOR_QUERY = "select * from colors where id = ?";
+    private final static String SELECT_COLOR_JOIN_QUERY = "select colors.id, colors.code from colors join phone2color" +
+            " on phone2color.colorId = colors.id where phone2color.phoneId = ?";
     private final static String DELETE_PHONE2COLOR_QUERY = "delete from phone2color where phoneId = ?";
-    private final static String INSERT_PHONE2COLOR_QUERY = "insert into phone2color (phoneId, colorId) values(?, ?)";
+    private final static String INSERT_PHONE2COLOR_QUERY = "insert into phone2color (phoneId, colorId) values(:phoneId, :colorId)";
     private final static String SELECT_PHONE_OFFSET_QUERY = "select * from phones offset ? limit ?";
-    private final static String COLOR_ID_COLUMN = "colorId";
+    private final static String UPDATE_QUERY = "update phones set id = :id, brand = :brand, model = :model, price = :price," +
+            " displaySizeInches = :displaySizeInches, weightGr = :weightGr, lengthMm = :lengthMm," +
+            " widthMm = :widthMm, heightMm = :heightMm, announced = :announced, deviceType = :deviceType, os = :os," +
+            " displayResolution = :displayResolution, pixelDensity = :pixelDensity, " +
+            "displayTechnology = :displayTechnology, backCameraMegapixels = :backCameraMegapixels, " +
+            "frontCameraMegapixels = :frontCameraMegapixels, ramGb = :ramGb, internalStorageGb = :internalStorageGb, " +
+            "batteryCapacityMah = :batteryCapacityMah, talkTimeHours = :talkTimeHours, " +
+            "standByTimeHours = :standByTimeHours, bluetooth = :bluetooth, positioning = :positioning, imageUrl = :imageUrl, " +
+            "description = :description where id = :id";
     private final static String PHONES_TABLE = "phones";
-    private final static String UPDATE_PHONES_QUERY = "update phones set ";
+    private final static String COLOR_ID_COLUMN = "colorId";
+    private final static String PHONE_ID_COLUMN = "phoneId";
+    private final static String ID_COLUMN = "id";
     @Resource
     private JdbcTemplate jdbcTemplate;
-    private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     public Optional<Phone> get(final Long key) {
-        lock.readLock().lock();
         Optional<Phone> phone = jdbcTemplate.query(SELECT_PHONE_QUERY,
                         new Object[]{key}, new BeanPropertyRowMapper(Phone.class))
                 .stream()
                 .findFirst();
         if (phone.isPresent()) {
-            List<Long> colorIds = jdbcTemplate.query(SELECT_PHONE2_COLOR_QUERY,
-                    new Object[]{key}, new IdToLongRowMapper(COLOR_ID_COLUMN));
-            Set<Color> colors = new HashSet<>();
-            for (Long colorId : colorIds) {
-                colors.add(jdbcTemplate.query(SELECT_COLOR_QUERY, new Object[]{colorId},
-                                new BeanPropertyRowMapper<>(Color.class))
-                        .stream()
-                        .findFirst()
-                        .get());
-            }
-            phone.get().setColors(colors);
+            saveColorSet(phone.get());
         }
-        lock.readLock().unlock();
         return phone;
     }
 
+    private void saveColorSet(final Phone phone) {
+        Set<Color> colors = jdbcTemplate.query(SELECT_COLOR_JOIN_QUERY,
+                        new Object[]{phone.getId()}, new BeanPropertyRowMapper<>(Color.class))
+                .stream()
+                .collect(Collectors.toSet());
+        phone.setColors(colors);
+    }
+
     public void save(final Phone phone) {
-        lock.writeLock().lock();
         if (jdbcTemplate.query(SELECT_PHONE_QUERY, new Object[]{phone.getId()},
                 new BeanPropertyRowMapper<>(Phone.class)).isEmpty()) {
             SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbcTemplate);
-            insert.withTableName(PHONES_TABLE).execute(new BeanPropertySqlParameterSource(phone));
+            Number number = insert.withTableName(PHONES_TABLE).usingGeneratedKeyColumns(ID_COLUMN)
+                    .executeAndReturnKey(new BeanPropertySqlParameterSource(phone));
+            phone.setId(number.longValue());
         } else {
-            update(phone);
+            NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(jdbcTemplate.getDataSource());
+            template.batchUpdate(UPDATE_QUERY, new SqlParameterSource[]{new BeanPropertySqlParameterSource(phone)});
         }
         saveColor(phone);
-        lock.writeLock().unlock();
     }
 
     private void saveColor(final Phone phone) {
         jdbcTemplate.update(DELETE_PHONE2COLOR_QUERY, phone.getId());
+        List<SqlParameterSource> parameterSources = new ArrayList<>();
         for (Color color : phone.getColors()) {
-            jdbcTemplate.update(INSERT_PHONE2COLOR_QUERY, new Object[]{phone.getId(), color.getId()});
+            parameterSources.add(new MapSqlParameterSource(Map.of(PHONE_ID_COLUMN, phone.getId(),
+                    COLOR_ID_COLUMN, color.getId())));
         }
-    }
-
-    private void update(final Phone phone) {
-        SqlParameterSource parameterSource = new BeanPropertySqlParameterSource(phone);
-        List<Object> values = new ArrayList<>();
-        StringBuilder builder = new StringBuilder(UPDATE_PHONES_QUERY);
-        for (String property : parameterSource.getParameterNames()) {
-            if (parameterSource.getSqlType(property) != JdbcUtils.TYPE_UNKNOWN) {
-                builder.append(property);
-                builder.append(" = ?, ");
-                values.add(parameterSource.getValue(property));
-            }
-        }
-        values.add(phone.getId());
-        builder.deleteCharAt(builder.length() - 2);
-        builder.append("where id = ?");
-        jdbcTemplate.update(builder.toString(), values.toArray());
+        NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(jdbcTemplate.getDataSource());
+        template.batchUpdate("insert into phone2color (phoneId, colorId) values(:phoneId, :colorId)",
+                parameterSources.toArray(new SqlParameterSource[0]));
     }
 
     public List<Phone> findAll(int offset, int limit) {
-        lock.readLock().lock();
         List<Phone> phones = jdbcTemplate.query(SELECT_PHONE_OFFSET_QUERY, new Object[]{offset, limit},
                 new BeanPropertyRowMapper(Phone.class));
         for (Phone phone : phones) {
-            List<Long> colorIds = jdbcTemplate.query(SELECT_PHONE2_COLOR_QUERY, new Object[]{phone.getId()},
-                    new IdToLongRowMapper(COLOR_ID_COLUMN));
-            Set<Color> colors = new HashSet<>();
-            for (Long colorId : colorIds) {
-                colors.add(jdbcTemplate.query(SELECT_COLOR_QUERY, new Object[]{colorId},
-                                new BeanPropertyRowMapper<>(Color.class))
-                        .stream()
-                        .findFirst()
-                        .get());
-            }
-            phone.setColors(colors);
+            saveColorSet(phone);
         }
-        lock.readLock().unlock();
         return phones;
     }
 }
