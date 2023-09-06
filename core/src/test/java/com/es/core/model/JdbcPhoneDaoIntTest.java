@@ -8,9 +8,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -39,15 +42,15 @@ public class JdbcPhoneDaoIntTest {
     @Test
     public void getPhoneTest() {
         Optional<Phone> phone = phoneDao.get(1000L);
-        String expectedModel = "ARCHOS 101 G9";
-        Long expectedId = 1000L;
-        Assert.assertEquals(expectedModel, phone.get().getModel());
-        Assert.assertEquals(expectedId, phone.get().getId());
-        for (Color color : phone.get().getColors()) {
-            Assert.assertTrue(color.getId().equals(black.getId())
-                    || color.getId().equals(purple.getId()));
-        }
-        Assert.assertEquals(2, phone.get().getColors().size());
+        Optional<Phone> expectedPhone = Optional.of(new Phone(1000L, "ARCHOS", "ARCHOS 101 G9", null,
+                BigDecimal.valueOf(10.1), 482, BigDecimal.valueOf(276.0), BigDecimal.valueOf(167.0),
+                BigDecimal.valueOf(12.6), null,"Tablet", "Android (4.0)", Set.of(black, purple), "1280 x  800", 149, null,
+                null, BigDecimal.valueOf(1.3), null, BigDecimal.valueOf(8.0), null,
+                null, null, "2.1, EDR", "GPS",
+                "manufacturer/ARCHOS/ARCHOS 101 G9.jpg", "The ARCHOS 101 G9 is a 10.1'' " +
+                "tablet, equipped with Google's open source OS. It offers a multi-core ARM CORTEX" +
+                " A9 processor at 1GHz, 8 or 16GB internal memory, microSD card slot, GPS, Wi-Fi, Bluetooth 2.1, and more."));
+        Assert.assertEquals(expectedPhone, phone);
     }
 
     @Test
@@ -58,11 +61,7 @@ public class JdbcPhoneDaoIntTest {
         phone.setColors(colors);
         phoneDao.save(phone);
         Phone actualPhone = phoneDao.get(1000L).get();
-        Assert.assertEquals(phone.getModel(), actualPhone.getModel());
-        for (Color color : actualPhone.getColors()) {
-            Assert.assertTrue(color.getId().equals(green.getId()));
-        }
-        Assert.assertEquals(1, actualPhone.getColors().size());
+        Assert.assertEquals(phone, actualPhone);
     }
 
     @Test
@@ -74,16 +73,14 @@ public class JdbcPhoneDaoIntTest {
         phoneDao.save(phone);
         Long expectedId = 1005L;
         Phone actualPhone = phoneDao.get(expectedId).get();
-        Assert.assertEquals(phone.getId(), actualPhone.getId());
+        Assert.assertEquals(phone, actualPhone);
     }
 
     @Test
     public void findAllTest() {
-        List<Phone> phones = phoneDao.findAll(0, 4);
-        Assert.assertEquals(4, phones.size());
-        for (Color color : phones.get(0).getColors()) {
-            Assert.assertTrue(color.getId().equals(black.getId())
-                    || color.getId().equals(purple.getId()));
-        }
+        List<Phone> actualPhones = phoneDao.findAll(0, 4);
+        List<Phone> expectedPhones = List.of(phoneDao.get(1000L).get(), phoneDao.get(1001L).get(),
+                phoneDao.get(1002L).get(), phoneDao.get(1003L).get());
+        Assert.assertEquals(expectedPhones, actualPhones);
     }
 }

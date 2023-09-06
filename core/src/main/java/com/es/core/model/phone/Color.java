@@ -1,5 +1,8 @@
 package com.es.core.model.phone;
 
+import lombok.EqualsAndHashCode;
+
+@EqualsAndHashCode
 public class Color {
     private Long id;
     private String code;

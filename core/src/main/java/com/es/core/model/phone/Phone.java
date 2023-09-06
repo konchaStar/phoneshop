@@ -1,10 +1,17 @@
 package com.es.core.model.phone;
 
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
 
+@EqualsAndHashCode
+@AllArgsConstructor
+@NoArgsConstructor
 public class Phone {
     private Long id;
     private String brand;

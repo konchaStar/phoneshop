@@ -43,17 +43,17 @@ public class JdbcPhoneDao implements PhoneDao {
                 .stream()
                 .findFirst();
         if (phone.isPresent()) {
-            saveColorSet(phone.get());
+            Set<Color> colors = getColorSet(phone.get());
+            phone.get().setColors(colors);
         }
         return phone;
     }
 
-    private void saveColorSet(final Phone phone) {
-        Set<Color> colors = jdbcTemplate.query(SELECT_COLOR_JOIN_QUERY,
+    private Set<Color> getColorSet(final Phone phone) {
+        return jdbcTemplate.query(SELECT_COLOR_JOIN_QUERY,
                         new Object[]{phone.getId()}, new BeanPropertyRowMapper<>(Color.class))
                 .stream()
                 .collect(Collectors.toSet());
-        phone.setColors(colors);
     }
 
     public void save(final Phone phone) {
@@ -67,18 +67,18 @@ public class JdbcPhoneDao implements PhoneDao {
             NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(jdbcTemplate.getDataSource());
             template.batchUpdate(UPDATE_QUERY, new SqlParameterSource[]{new BeanPropertySqlParameterSource(phone)});
         }
-        saveColor(phone);
+        saveColors(phone);
     }
 
-    private void saveColor(final Phone phone) {
+    private void saveColors(final Phone phone) {
         jdbcTemplate.update(DELETE_PHONE2COLOR_QUERY, phone.getId());
-        List<SqlParameterSource> parameterSources = new ArrayList<>();
-        for (Color color : phone.getColors()) {
-            parameterSources.add(new MapSqlParameterSource(Map.of(PHONE_ID_COLUMN, phone.getId(),
-                    COLOR_ID_COLUMN, color.getId())));
-        }
+        List<SqlParameterSource> parameterSources = phone.getColors().stream()
+                .map(color -> {
+                    return new MapSqlParameterSource(Map.of(PHONE_ID_COLUMN, phone.getId(),
+                            COLOR_ID_COLUMN, color.getId()));
+                }).collect(Collectors.toList());
         NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(jdbcTemplate.getDataSource());
-        template.batchUpdate("insert into phone2color (phoneId, colorId) values(:phoneId, :colorId)",
+        template.batchUpdate(INSERT_PHONE2COLOR_QUERY,
                 parameterSources.toArray(new SqlParameterSource[0]));
     }
 
@@ -86,7 +86,8 @@ public class JdbcPhoneDao implements PhoneDao {
         List<Phone> phones = jdbcTemplate.query(SELECT_PHONE_OFFSET_QUERY, new Object[]{offset, limit},
                 new BeanPropertyRowMapper(Phone.class));
         for (Phone phone : phones) {
-            saveColorSet(phone);
+            Set<Color> colors = getColorSet(phone);
+            phone.setColors(colors);
         }
         return phones;
     }
