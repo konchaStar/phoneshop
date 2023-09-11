@@ -14,7 +14,6 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -51,9 +50,9 @@ public class JdbcPhoneDao implements PhoneDao {
 
 
     public void save(final Phone phone) {
-        Object[] phoneIdArg = new Object[]{phone.getId()};
-        if (jdbcTemplate.query(SELECT_PHONE_QUERY, phoneIdArg,
-                new BeanPropertyRowMapper<>(Phone.class)).isEmpty()) {
+        boolean notExisted = jdbcTemplate.query(SELECT_PHONE_QUERY, new Object[]{phone.getId()},
+                new BeanPropertyRowMapper<>(Phone.class)).isEmpty();
+        if (notExisted) {
             SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbcTemplate);
             Number number = insert.withTableName(PHONES_TABLE).usingGeneratedKeyColumns(ID_COLUMN)
                     .executeAndReturnKey(new BeanPropertySqlParameterSource(phone));
