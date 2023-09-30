@@ -8,8 +8,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -78,7 +76,7 @@ public class JdbcPhoneDaoIntTest {
 
     @Test
     public void findAllTest() {
-        List<Phone> actualPhones = phoneDao.findAll(0, 4);
+        List<Phone> actualPhones = phoneDao.findAll("", "", "", 0, 4);
         List<Phone> expectedPhones = List.of(phoneDao.get(1000L).get(), phoneDao.get(1001L).get(),
                 phoneDao.get(1002L).get(), phoneDao.get(1003L).get());
         Assert.assertEquals(expectedPhones, actualPhones);
