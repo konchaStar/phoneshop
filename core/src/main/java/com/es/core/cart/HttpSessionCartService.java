@@ -5,35 +5,29 @@ import com.es.core.model.phone.Phone;
 import com.es.core.model.phone.PhoneDao;
 import com.es.core.model.stock.Stock;
 import com.es.core.model.stock.StockDao;
+import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpSession;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Optional;
 
 @Service
 public class HttpSessionCartService implements CartService {
-    private static String CART_SESSION_ATTRIBUTE = "cart";
+    @Autowired
+    private ObjectFactory<Cart> cartObjectFactory;
+    public Cart getCart() {
+        return cartObjectFactory.getObject();
+    }
+
     @Resource
     private PhoneDao phoneDao;
     @Resource
     private StockDao stockDao;
-    @Resource
-    private HttpSession httpSession;
 
     public HttpSessionCartService() {
-    }
-
-    @Override
-    public Cart getCart() {
-        Cart cart = (Cart) httpSession.getAttribute(CART_SESSION_ATTRIBUTE);
-        if (cart == null) {
-            cart = new Cart();
-            httpSession.setAttribute(CART_SESSION_ATTRIBUTE, cart);
-        }
-        return cart;
     }
 
     @Override
