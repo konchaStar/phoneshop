@@ -1,5 +1,7 @@
 package com.es.core.model.phone;
 
+import com.es.core.enums.SortOrder;
+import com.es.core.enums.SortType;
 import com.es.core.model.rowmapper.PhoneRowMapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -30,12 +32,9 @@ public class JdbcPhoneDao implements PhoneDao {
             "batteryCapacityMah = :batteryCapacityMah, talkTimeHours = :talkTimeHours, " +
             "standByTimeHours = :standByTimeHours, bluetooth = :bluetooth, positioning = :positioning, imageUrl = :imageUrl, " +
             "description = :description where id = :id";
-    private final static String SELECT_PHONES_COUNT_QUERY = "select count(phones.id) from phones join " +
-            "stocks on phones.id = stocks.phoneId where stocks.stock - stocks.reserved > 0";
     private final static String SELECT_PHONES_JOIN_STOCK = "select * from phones join stocks on phones.id " +
             "= stocks.phoneId where stocks.stock - stocks.reserved > 0";
-    private final static String SELECT_COUNT_PHONES_JOIN_STOCKS = "select count(phones.id) from phones join " +
-            "stocks on phones.id = stocks.phoneId where stocks.stock - stocks.reserved > 0 and ";
+
     private final static String LIKE_MODEL_CONDITION = "lower(model) like ? or ";
     private final static String OFFSET_LIMIT = "offset ? limit ?";
     private final static String ORDER_BY = " order by ";
@@ -82,8 +81,10 @@ public class JdbcPhoneDao implements PhoneDao {
                 parameterSources.toArray(new SqlParameterSource[0]));
     }
 
-    public List<Phone> findAll(String search, String sort, String order, int offset, int limit) {
+    public List<Phone> findAll(String search, SortType type, SortOrder sortOrder, int offset, int limit) {
         List<Phone> phones;
+        String sort = type == null ? "" : type.toString();
+        String order = sortOrder == null ? "" : sortOrder.toString();
         if (!search.isEmpty() || !sort.isEmpty()) {
             List<Object> args = new ArrayList<>();
             String query = getSelectSearchSortQuery(search, sort, order);
@@ -119,21 +120,5 @@ public class JdbcPhoneDao implements PhoneDao {
         }
         query.append(OFFSET_LIMIT);
         return query.toString();
-    }
-
-    @Override
-    public Long getNumberOfPages(String search) {
-        if (search.isEmpty()) {
-            return (jdbcTemplate.queryForObject(SELECT_PHONES_COUNT_QUERY, Long.class) + 9) / 10;
-        } else {
-            StringBuilder query = new StringBuilder(SELECT_COUNT_PHONES_JOIN_STOCKS);
-            List<Object> args = new ArrayList<>();
-            for (String word : search.toLowerCase().split("//s")) {
-                query.append(LIKE_MODEL_CONDITION);
-                args.add("%".concat(word).concat("%"));
-            }
-            query.delete(query.length() - 3, query.length());
-            return (jdbcTemplate.queryForObject(query.toString(), args.toArray(), Long.class) + 9) / 10;
-        }
     }
 }

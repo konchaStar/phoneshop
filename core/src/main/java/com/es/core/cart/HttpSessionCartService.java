@@ -5,8 +5,8 @@ import com.es.core.model.phone.Phone;
 import com.es.core.model.phone.PhoneDao;
 import com.es.core.model.stock.Stock;
 import com.es.core.model.stock.StockDao;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -14,10 +14,12 @@ import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Optional;
 
+@NoArgsConstructor
 @Service
 public class HttpSessionCartService implements CartService {
-    @Autowired
+    @Resource
     private ObjectFactory<Cart> cartObjectFactory;
+
     public Cart getCart() {
         return cartObjectFactory.getObject();
     }
@@ -27,24 +29,23 @@ public class HttpSessionCartService implements CartService {
     @Resource
     private StockDao stockDao;
 
-    public HttpSessionCartService() {
-    }
-
     @Override
     public void addPhone(Long phoneId, Long quantity) {
         Optional<Phone> phone = phoneDao.get(phoneId);
         Cart cart = getCart();
-        Stock stock = stockDao.getAvailableStock(phoneId);
-        if (phone.isPresent() && stock.getStock() - stock.getReserved() - quantity > 0) {
-            if (cart.getPhones().keySet().contains(phone.get())) {
-                Long cartQuantity = cart.getPhones().get(phone.get());
-                cart.getPhones().replace(phone.get(), cartQuantity + quantity);
+        if (phone.isPresent()) {
+            Stock stock = stockDao.getAvailableStock(phoneId);
+            if (stock.getStock() - stock.getReserved() - quantity >= 0) {
+                if (cart.getPhones().containsKey(phone.get())) {
+                    Long cartQuantity = cart.getPhones().get(phone.get());
+                    cart.getPhones().replace(phone.get(), cartQuantity + quantity);
+                } else {
+                    cart.getPhones().put(phone.get(), quantity);
+                }
+                recalculate();
             } else {
-                cart.getPhones().put(phone.get(), quantity);
+                throw new OutOfStockException("Out of stock. Max quantity " + (stock.getStock() - stock.getReserved()));
             }
-            recalculate();
-        } else {
-            throw new OutOfStockException("Out of stock. Max quantity " + (stock.getStock() - stock.getReserved()));
         }
     }
 
@@ -63,9 +64,10 @@ public class HttpSessionCartService implements CartService {
         BigDecimal totalQuantity = BigDecimal.ZERO;
         BigDecimal totalPrice = BigDecimal.ZERO;
         for (Phone phone : cart.getPhones().keySet()) {
-            totalQuantity = totalQuantity.add(BigDecimal.valueOf(cart.getPhones().get(phone)));
+            Long quantity = cart.getPhones().get(phone);
+            totalQuantity = totalQuantity.add(BigDecimal.valueOf(quantity));
             totalPrice = totalPrice.add(phone.getPrice() == null ? BigDecimal.ZERO : phone.getPrice().multiply(
-                    BigDecimal.valueOf(cart.getPhones().get(phone))));
+                    BigDecimal.valueOf(quantity)));
         }
         cart.setTotalQuantity(totalQuantity.longValue());
         cart.setTotalPrice(totalPrice);

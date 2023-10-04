@@ -6,8 +6,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class QuantityAddToCartDto {
-    String message;
-    boolean errorStatus;
-    long totalQuantity;
-    long phoneId;
+    private String message;
+    private boolean errorStatus;
+    private long totalQuantity;
+    private long phoneId;
 }
