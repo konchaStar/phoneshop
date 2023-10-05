@@ -21,8 +21,10 @@ public class JdbcPhoneDao implements PhoneDao {
     private final static String SELECT_PHONE_QUERY = "select * from phones where id = ?";
     private final static String DELETE_PHONE2COLOR_QUERY = "delete from phone2color where phoneId = ?";
     private final static String INSERT_PHONE2COLOR_QUERY = "insert into phone2color (phoneId, colorId) values(:phoneId, :colorId)";
-    private final static String SELECT_PHONE_OFFSET_QUERY = "select * from phones join stocks on phones.id = stocks.phoneId " +
-            "where stocks.stock - stocks.reserved > 0 offset ? limit ?";
+    private final static String OFFSET_LIMIT = "offset ? limit ?";
+    private final static String SELECT_PHONES_JOIN_STOCK = "select * from phones join stocks on phones.id " +
+            "= stocks.phoneId where stocks.stock - stocks.reserved > 0";
+    private final static String SELECT_PHONE_OFFSET_QUERY = SELECT_PHONES_JOIN_STOCK + OFFSET_LIMIT;
     private final static String UPDATE_QUERY = "update phones set id = :id, brand = :brand, model = :model, price = :price," +
             " displaySizeInches = :displaySizeInches, weightGr = :weightGr, lengthMm = :lengthMm," +
             " widthMm = :widthMm, heightMm = :heightMm, announced = :announced, deviceType = :deviceType, os = :os," +
@@ -32,11 +34,8 @@ public class JdbcPhoneDao implements PhoneDao {
             "batteryCapacityMah = :batteryCapacityMah, talkTimeHours = :talkTimeHours, " +
             "standByTimeHours = :standByTimeHours, bluetooth = :bluetooth, positioning = :positioning, imageUrl = :imageUrl, " +
             "description = :description where id = :id";
-    private final static String SELECT_PHONES_JOIN_STOCK = "select * from phones join stocks on phones.id " +
-            "= stocks.phoneId where stocks.stock - stocks.reserved > 0";
 
-    private final static String LIKE_MODEL_CONDITION = "lower(model) like ? or ";
-    private final static String OFFSET_LIMIT = "offset ? limit ?";
+    private final static String LIKE_MODEL_CONDITION = "lower(model) like ?";
     private final static String ORDER_BY = " order by ";
     private final static String PHONES_TABLE = "phones";
     private final static String COLOR_ID_COLUMN = "colorId";
@@ -110,10 +109,11 @@ public class JdbcPhoneDao implements PhoneDao {
         if (!search.isEmpty()) {
             String[] words = search.split("//s");
             query.append(" and ");
-            for (String word : words) {
+            query.append(LIKE_MODEL_CONDITION);
+            for (int i = 1; i < words.length; i++) {
+                query.append(" or ");
                 query.append(LIKE_MODEL_CONDITION);
             }
-            query.delete(query.length() - 3, query.length());
         }
         if (!sort.isEmpty()) {
             query.append(ORDER_BY + sort + " " + order + " ");
