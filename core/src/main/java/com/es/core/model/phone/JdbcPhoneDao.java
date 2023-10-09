@@ -34,13 +34,18 @@ public class JdbcPhoneDao implements PhoneDao {
             "batteryCapacityMah = :batteryCapacityMah, talkTimeHours = :talkTimeHours, " +
             "standByTimeHours = :standByTimeHours, bluetooth = :bluetooth, positioning = :positioning, imageUrl = :imageUrl, " +
             "description = :description where id = :id";
-
+    private final static String SELECT_COUNT_PHONES_JOIN_STOCKS = "select count(phones.id) from phones join " +
+            "stocks on phones.id = stocks.phoneId where stocks.stock - stocks.reserved > 0 and ";
+    private final static String SELECT_PHONES_COUNT_QUERY = "select count(phones.id) from phones join " +
+            "stocks on phones.id = stocks.phoneId where stocks.stock - stocks.reserved > 0";
     private final static String LIKE_MODEL_CONDITION = "lower(model) like ?";
     private final static String ORDER_BY = " order by ";
     private final static String PHONES_TABLE = "phones";
     private final static String COLOR_ID_COLUMN = "colorId";
     private final static String PHONE_ID_COLUMN = "phoneId";
     private final static String ID_COLUMN = "id";
+    private final static String OR = " or ";
+    private final static String AND = " and ";
     @Resource
     private JdbcTemplate jdbcTemplate;
 
@@ -106,12 +111,12 @@ public class JdbcPhoneDao implements PhoneDao {
 
     private String getSelectSearchSortQuery(String search, String sort, String order) {
         StringBuilder query = new StringBuilder(SELECT_PHONES_JOIN_STOCK);
-        if (!search.isEmpty()) {
+        if (!search.isBlank()) {
             String[] words = search.split("//s");
-            query.append(" and ");
+            query.append(AND);
             query.append(LIKE_MODEL_CONDITION);
             for (int i = 1; i < words.length; i++) {
-                query.append(" or ");
+                query.append(OR);
                 query.append(LIKE_MODEL_CONDITION);
             }
         }
@@ -120,5 +125,24 @@ public class JdbcPhoneDao implements PhoneDao {
         }
         query.append(OFFSET_LIMIT);
         return query.toString();
+    }
+
+    @Override
+    public Long getRowCount(String search) {
+        if (search.isBlank()) {
+            return jdbcTemplate.queryForObject(SELECT_PHONES_COUNT_QUERY, Long.class);
+        } else {
+            StringBuilder query = new StringBuilder(SELECT_COUNT_PHONES_JOIN_STOCKS);
+            List<Object> args = new ArrayList<>();
+            String[] words = search.split("//s");
+            query.append(AND);
+            query.append(LIKE_MODEL_CONDITION);
+            for (int i = 1; i < words.length; i++) {
+                query.append(OR);
+                query.append(LIKE_MODEL_CONDITION);
+            }
+            query.delete(query.length() - 3, query.length());
+            return jdbcTemplate.queryForObject(query.toString(), args.toArray(), Long.class);
+        }
     }
 }

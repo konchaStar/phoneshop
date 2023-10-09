@@ -13,4 +13,5 @@ public interface PhoneDao {
 
     List<Phone> findAll(String search, SortType type, SortOrder sortOrder, int offset, int limit);
 
+    Long getRowCount(String search);
 }

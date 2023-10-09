@@ -3,10 +3,10 @@ package com.es.core.enums;
 import java.util.Arrays;
 
 public enum SortType {
-    brand, model, displaySizeInches, price;
+    BRAND, MODEL, DISPLAYSIZEINCHES, PRICE;
     public static SortType getValue(String name) {
         return Arrays.stream(SortType.values())
-                .filter(value -> value.toString().equals(name))
+                .filter(value -> value.toString().toLowerCase().equals(name.toLowerCase()))
                 .findAny()
                 .orElse(null);
     }
