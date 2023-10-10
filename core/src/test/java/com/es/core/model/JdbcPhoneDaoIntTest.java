@@ -1,5 +1,7 @@
 package com.es.core.model;
 
+import com.es.core.enums.SortOrder;
+import com.es.core.enums.SortType;
 import com.es.core.model.phone.Color;
 import com.es.core.model.phone.Phone;
 import com.es.core.model.phone.PhoneDao;
@@ -8,8 +10,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -78,7 +78,7 @@ public class JdbcPhoneDaoIntTest {
 
     @Test
     public void findAllTest() {
-        List<Phone> actualPhones = phoneDao.findAll(0, 4);
+        List<Phone> actualPhones = phoneDao.findAll("", SortType.valueOf(""), SortOrder.valueOf(""), 0, 4);
         List<Phone> expectedPhones = List.of(phoneDao.get(1000L).get(), phoneDao.get(1001L).get(),
                 phoneDao.get(1002L).get(), phoneDao.get(1003L).get());
         Assert.assertEquals(expectedPhones, actualPhones);

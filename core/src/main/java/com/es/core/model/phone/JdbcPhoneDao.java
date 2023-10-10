@@ -1,5 +1,7 @@
 package com.es.core.model.phone;
 
+import com.es.core.enums.SortOrder;
+import com.es.core.enums.SortType;
 import com.es.core.model.rowmapper.PhoneRowMapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,9 +13,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -21,7 +21,10 @@ public class JdbcPhoneDao implements PhoneDao {
     private final static String SELECT_PHONE_QUERY = "select * from phones where id = ?";
     private final static String DELETE_PHONE2COLOR_QUERY = "delete from phone2color where phoneId = ?";
     private final static String INSERT_PHONE2COLOR_QUERY = "insert into phone2color (phoneId, colorId) values(:phoneId, :colorId)";
-    private final static String SELECT_PHONE_OFFSET_QUERY = "select * from phones offset ? limit ?";
+    private final static String OFFSET_LIMIT = "offset ? limit ?";
+    private final static String SELECT_PHONES_JOIN_STOCK = "select * from phones join stocks on phones.id " +
+            "= stocks.phoneId where stocks.stock - stocks.reserved > 0";
+    private final static String SELECT_PHONE_OFFSET_QUERY = SELECT_PHONES_JOIN_STOCK + OFFSET_LIMIT;
     private final static String UPDATE_QUERY = "update phones set id = :id, brand = :brand, model = :model, price = :price," +
             " displaySizeInches = :displaySizeInches, weightGr = :weightGr, lengthMm = :lengthMm," +
             " widthMm = :widthMm, heightMm = :heightMm, announced = :announced, deviceType = :deviceType, os = :os," +
@@ -31,10 +34,18 @@ public class JdbcPhoneDao implements PhoneDao {
             "batteryCapacityMah = :batteryCapacityMah, talkTimeHours = :talkTimeHours, " +
             "standByTimeHours = :standByTimeHours, bluetooth = :bluetooth, positioning = :positioning, imageUrl = :imageUrl, " +
             "description = :description where id = :id";
+    private final static String SELECT_COUNT_PHONES_JOIN_STOCKS = "select count(phones.id) from phones join " +
+            "stocks on phones.id = stocks.phoneId where stocks.stock - stocks.reserved > 0 and ";
+    private final static String SELECT_PHONES_COUNT_QUERY = "select count(phones.id) from phones join " +
+            "stocks on phones.id = stocks.phoneId where stocks.stock - stocks.reserved > 0";
+    private final static String LIKE_MODEL_CONDITION = "lower(model) like ?";
+    private final static String ORDER_BY = " order by ";
     private final static String PHONES_TABLE = "phones";
     private final static String COLOR_ID_COLUMN = "colorId";
     private final static String PHONE_ID_COLUMN = "phoneId";
     private final static String ID_COLUMN = "id";
+    private final static String OR = " or ";
+    private final static String AND = " and ";
     @Resource
     private JdbcTemplate jdbcTemplate;
 
@@ -46,7 +57,6 @@ public class JdbcPhoneDao implements PhoneDao {
                 .findFirst();
         return phone;
     }
-
 
 
     public void save(final Phone phone) {
@@ -68,17 +78,70 @@ public class JdbcPhoneDao implements PhoneDao {
         jdbcTemplate.update(DELETE_PHONE2COLOR_QUERY, phone.getId());
         List<SqlParameterSource> parameterSources = phone.getColors().stream()
                 .map(color -> new MapSqlParameterSource(Map.of(PHONE_ID_COLUMN, phone.getId(),
-                            COLOR_ID_COLUMN, color.getId()))
+                        COLOR_ID_COLUMN, color.getId()))
                 ).collect(Collectors.toList());
         NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(jdbcTemplate.getDataSource());
         template.batchUpdate(INSERT_PHONE2COLOR_QUERY,
                 parameterSources.toArray(new SqlParameterSource[0]));
     }
 
-    public List<Phone> findAll(int offset, int limit) {
-        Object[] offsetLimitArg = new Object[]{offset, limit};
-        List<Phone> phones = jdbcTemplate.query(SELECT_PHONE_OFFSET_QUERY, offsetLimitArg,
-                new PhoneRowMapper(jdbcTemplate));
+    public List<Phone> findAll(String search, SortType type, SortOrder sortOrder, int offset, int limit) {
+        List<Phone> phones;
+        String sort = type == null ? "" : type.toString();
+        String order = sortOrder == null ? "" : sortOrder.toString();
+        if (!search.isEmpty() || !sort.isEmpty()) {
+            List<Object> args = new ArrayList<>();
+            String query = getSelectSearchSortQuery(search, sort, order);
+            if (!search.isEmpty()) {
+                String[] words = search.toLowerCase().split("//s");
+                Arrays.stream(words)
+                        .map(word -> "%".concat(word).concat("%"))
+                        .forEach(args::add);
+            }
+            args.add(offset);
+            args.add(limit);
+            phones = jdbcTemplate.query(query, args.toArray(), new PhoneRowMapper(jdbcTemplate));
+        } else {
+            Object[] offsetLimitArg = new Object[]{offset, limit};
+            phones = jdbcTemplate.query(SELECT_PHONE_OFFSET_QUERY, offsetLimitArg,
+                    new PhoneRowMapper(jdbcTemplate));
+        }
         return phones;
+    }
+
+    private String getSelectSearchSortQuery(String search, String sort, String order) {
+        StringBuilder query = new StringBuilder(SELECT_PHONES_JOIN_STOCK);
+        if (!search.isBlank()) {
+            String[] words = search.split("//s");
+            query.append(AND);
+            query.append(LIKE_MODEL_CONDITION);
+            for (int i = 1; i < words.length; i++) {
+                query.append(OR);
+                query.append(LIKE_MODEL_CONDITION);
+            }
+        }
+        if (!sort.isEmpty()) {
+            query.append(ORDER_BY + sort + " " + order + " ");
+        }
+        query.append(OFFSET_LIMIT);
+        return query.toString();
+    }
+
+    @Override
+    public Long getRowCount(String search) {
+        if (search.isBlank()) {
+            return jdbcTemplate.queryForObject(SELECT_PHONES_COUNT_QUERY, Long.class);
+        } else {
+            StringBuilder query = new StringBuilder(SELECT_COUNT_PHONES_JOIN_STOCKS);
+            List<Object> args = new ArrayList<>();
+            String[] words = search.split("//s");
+            query.append(AND);
+            query.append(LIKE_MODEL_CONDITION);
+            for (int i = 1; i < words.length; i++) {
+                query.append(OR);
+                query.append(LIKE_MODEL_CONDITION);
+            }
+            return jdbcTemplate.queryForObject(query.toString(), args.toArray(), Long.class);
+        }
     }
 }
