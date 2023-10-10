@@ -36,7 +36,6 @@ public class HttpSessionCartService implements CartService {
         if (phone.isPresent()) {
             Stock stock = stockDao.getAvailableStock(phoneId);
             Long cartQuantity = Optional.ofNullable(cart.getPhones().get(phone.get())).orElse(0l);
-            cartQuantity = cartQuantity == null ? 0l : cartQuantity;
             if (stock.getStock() - stock.getReserved() - quantity - cartQuantity >= 0) {
                 if (cart.getPhones().containsKey(phone.get())) {
                     cart.getPhones().replace(phone.get(), cartQuantity + quantity);

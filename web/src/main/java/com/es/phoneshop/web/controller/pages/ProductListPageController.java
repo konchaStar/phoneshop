@@ -17,6 +17,9 @@ import java.util.List;
 @Controller
 @RequestMapping(value = "/productList")
 public class ProductListPageController {
+    private static final int PHONES_PAGE_AMOUNT = 10;
+    private static final String PHONES_ATTRIBUTE = "phones";
+    private static final String PAGES_ATTRIBUTE = "pages";
     @Resource
     private PhoneDao phoneDao;
 
@@ -27,9 +30,10 @@ public class ProductListPageController {
                                   @RequestParam(name = "order", defaultValue = "") String order) {
         SortType type = SortType.getValue(sort);
         SortOrder sortOrder = SortOrder.getValue(order);
-        model.addAttribute("phones", phoneDao.findAll(search, type, sortOrder, (page - 1) * 10, 10));
-        Long pages = (phoneDao.getRowCount(search) + 9) / 10;
-        model.addAttribute("pages", pages);
+        model.addAttribute(PHONES_ATTRIBUTE, phoneDao.findAll(search, type, sortOrder,
+                (page - 1) * PHONES_PAGE_AMOUNT, PHONES_PAGE_AMOUNT));
+        Long pages = (phoneDao.getRowCount(search) + PHONES_PAGE_AMOUNT - 1) / PHONES_PAGE_AMOUNT;
+        model.addAttribute(PAGES_ATTRIBUTE, pages);
         return "productList";
     }
 

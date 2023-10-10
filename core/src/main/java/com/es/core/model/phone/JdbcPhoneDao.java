@@ -141,7 +141,6 @@ public class JdbcPhoneDao implements PhoneDao {
                 query.append(OR);
                 query.append(LIKE_MODEL_CONDITION);
             }
-            query.delete(query.length() - 3, query.length());
             return jdbcTemplate.queryForObject(query.toString(), args.toArray(), Long.class);
         }
     }
