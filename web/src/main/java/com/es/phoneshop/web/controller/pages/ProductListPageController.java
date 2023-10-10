@@ -26,11 +26,9 @@ public class ProductListPageController {
     @RequestMapping(method = RequestMethod.GET)
     public String showProductList(Model model, @RequestParam(value = "page", defaultValue = "1") int page,
                                   @RequestParam(name = "search", defaultValue = "") String search,
-                                  @RequestParam(name = "sort", defaultValue = "") String sort,
-                                  @RequestParam(name = "order", defaultValue = "") String order) {
-        SortType type = SortType.getValue(sort);
-        SortOrder sortOrder = SortOrder.getValue(order);
-        model.addAttribute(PHONES_ATTRIBUTE, phoneDao.findAll(search, type, sortOrder,
+                                  @RequestParam(name = "sort", defaultValue = "") SortType sort,
+                                  @RequestParam(name = "order", defaultValue = "") SortOrder order) {
+        model.addAttribute(PHONES_ATTRIBUTE, phoneDao.findAll(search, sort, order,
                 (page - 1) * PHONES_PAGE_AMOUNT, PHONES_PAGE_AMOUNT));
         Long pages = (phoneDao.getRowCount(search) + PHONES_PAGE_AMOUNT - 1) / PHONES_PAGE_AMOUNT;
         model.addAttribute(PAGES_ATTRIBUTE, pages);

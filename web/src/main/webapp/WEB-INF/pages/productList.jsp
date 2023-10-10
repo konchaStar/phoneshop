@@ -14,11 +14,11 @@
     <thead>
     <tr>
         <td>Image</td>
-        <td>Brand<tags:sortList field="brand"/></td>
-        <td>Model<tags:sortList field="model"/></td>
+        <td>Brand<tags:sortList field="BRAND"/></td>
+        <td>Model<tags:sortList field="MODEL"/></td>
         <td>Color</td>
-        <td>Display size<tags:sortList field="displaySizeInches"/></td>
-        <td>Price<tags:sortList field="price"/></td>
+        <td>Display size<tags:sortList field="DISPLAYSIZEINCHES"/></td>
+        <td>Price<tags:sortList field="PRICE"/></td>
         <td>Quantity</td>
         <td>Action</td>
     </tr>
