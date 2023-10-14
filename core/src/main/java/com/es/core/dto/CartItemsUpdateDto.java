@@ -13,10 +13,12 @@ import java.util.stream.Collectors;
 public class CartItemsUpdateDto {
     @Valid
     private List<QuantityCartItemDto> items;
-    public void copyFromCart(Cart cart) {
-        items = cart.getPhones().keySet()
+    public static CartItemsUpdateDto copyFromCart(Cart cart) {
+        CartItemsUpdateDto cartItemsUpdateDto = new CartItemsUpdateDto();
+        cartItemsUpdateDto.setItems(cart.getPhones().keySet()
                 .stream()
                 .map(phone -> new QuantityCartItemDto(phone.getId(), cart.getPhones().get(phone)))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
+        return cartItemsUpdateDto;
     }
 }

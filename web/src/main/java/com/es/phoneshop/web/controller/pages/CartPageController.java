@@ -2,18 +2,19 @@ package com.es.phoneshop.web.controller.pages;
 
 import com.es.core.cart.CartService;
 import com.es.core.dto.CartItemsUpdateDto;
+import com.es.core.dto.QuantityCartItemDto;
 import com.es.core.model.stock.Stock;
 import com.es.core.model.stock.StockDao;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.security.KeyPair;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping(value = "/cart")
@@ -30,16 +31,14 @@ public class CartPageController {
     @Resource
     private StockDao stockDao;
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public String getCart(Model model) {
         model.addAttribute(CART_ATTRIBUTE, cartService.getCart());
-        CartItemsUpdateDto itemsDto = new CartItemsUpdateDto();
-        itemsDto.copyFromCart(cartService.getCart());
-        model.addAttribute(ITEMS_DTO_ATTRIBUTE, itemsDto);
+        model.addAttribute(ITEMS_DTO_ATTRIBUTE, CartItemsUpdateDto.copyFromCart(cartService.getCart()));
         return "cart";
     }
 
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public String updateCart(@ModelAttribute(ITEMS_DTO_ATTRIBUTE) @Valid CartItemsUpdateDto itemsUpdateDto,
                              BindingResult br, Model model) {
         List<String> errors = new ArrayList<>(Collections.nCopies(itemsUpdateDto.getItems().size(), null));
@@ -62,10 +61,8 @@ public class CartPageController {
         }
         model.addAttribute(ERRORS_ATTRIBUTE, errors);
         if(!hasErrors) {
-            Map<Long, Long> items = new HashMap<>();
-            itemsUpdateDto.getItems().stream()
-                    .map(cartItemDto -> Map.of(cartItemDto.getPhoneId(), cartItemDto.getQuantity()))
-                    .forEach(items::putAll);
+            Map<Long, Long> items = itemsUpdateDto.getItems().stream()
+                        .collect(Collectors.toMap(QuantityCartItemDto::getPhoneId, QuantityCartItemDto::getQuantity));
             cartService.update(items);
             return "redirect:cart";
         }
