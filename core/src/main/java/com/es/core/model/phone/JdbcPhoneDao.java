@@ -35,10 +35,10 @@ public class JdbcPhoneDao implements PhoneDao {
             "standByTimeHours = :standByTimeHours, bluetooth = :bluetooth, positioning = :positioning, imageUrl = :imageUrl, " +
             "description = :description where id = :id";
     private final static String SELECT_COUNT_PHONES_JOIN_STOCKS = "select count(phones.id) from phones join " +
-            "stocks on phones.id = stocks.phoneId where stocks.stock - stocks.reserved > 0 and ";
+            "stocks on phones.id = stocks.phoneId where stocks.stock - stocks.reserved > 0 ";
     private final static String SELECT_PHONES_COUNT_QUERY = "select count(phones.id) from phones join " +
             "stocks on phones.id = stocks.phoneId where stocks.stock - stocks.reserved > 0";
-    private final static String LIKE_MODEL_CONDITION = "lower(model) like ?";
+    private final static String LIKE_MODEL_CONDITION = "lower(model) like ? ";
     private final static String ORDER_BY = " order by ";
     private final static String PHONES_TABLE = "phones";
     private final static String COLOR_ID_COLUMN = "colorId";
@@ -137,9 +137,11 @@ public class JdbcPhoneDao implements PhoneDao {
             String[] words = search.split("//s");
             query.append(AND);
             query.append(LIKE_MODEL_CONDITION);
+            args.add("%".concat(words[0]).concat("%"));
             for (int i = 1; i < words.length; i++) {
                 query.append(OR);
                 query.append(LIKE_MODEL_CONDITION);
+                args.add("%".concat(words[i]).concat("%"));
             }
             return jdbcTemplate.queryForObject(query.toString(), args.toArray(), Long.class);
         }

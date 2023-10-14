@@ -1,4 +1,3 @@
-<%@ page import="java.util.List" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="tags" tagdir="/WEB-INF/tags" %>
@@ -30,7 +29,7 @@
                     <img src="https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/${phone.imageUrl}">
                 </td>
                 <td>${phone.brand}</td>
-                <td>${phone.model}</td>
+                <td><a href="${pageContext.servletContext.contextPath}/productDetails/${phone.id}">${phone.model}</a></td>
                 <td>
                     <c:forEach var="color" items="${phone.colors}">
                         ${color.code}
@@ -83,7 +82,7 @@
             success: function(data) {
                 const message = document.querySelector("#message" + phoneId);
                 const successMessage = document.querySelector("#successMessage");
-                if(data.errorStatus == true){
+                if (data.errorStatus == true) {
                     successMessage.innerText = "";
                     message.innerText = data.message;
                 } else {
