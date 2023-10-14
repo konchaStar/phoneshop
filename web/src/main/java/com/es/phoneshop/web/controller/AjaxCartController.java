@@ -1,21 +1,16 @@
 package com.es.phoneshop.web.controller;
 
 import com.es.core.cart.CartService;
-import com.es.core.dto.CartItemDto;
+import com.es.core.dto.CartDeleteItemDto;
 import com.es.core.dto.QuantityAddToCartDto;
 import com.es.core.dto.QuantityCartItemDto;
 import com.es.core.exception.OutOfStockException;
-import com.es.core.model.phone.Color;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/ajaxCart")
@@ -37,61 +32,27 @@ public class AjaxCartController {
         }
         message.setPhoneId(cartDto.getPhoneId());
         message.setTotalQuantity(cartService.getCart().getTotalQuantity());
+        message.setTotalPrice(cartService.getCart().getTotalPrice());
         return message;
     }
 
     @RequestMapping(method = RequestMethod.DELETE, produces = "application/json")
-    public CartItemDto deleteCartItem(@RequestBody Long id) {
+    public CartDeleteItemDto deleteCartItem(@RequestBody Long id) {
         cartService.remove(id);
-        return getCartItemDto();
+        CartDeleteItemDto cartDeleteItemDto = new CartDeleteItemDto();
+        cartDeleteItemDto.setPhoneId(id);
+        cartDeleteItemDto.setTotalQuantity(cartService.getCart().getTotalQuantity());
+        cartDeleteItemDto.setTotalPrice(cartService.getCart().getTotalPrice());
+        return cartDeleteItemDto;
     }
-    private CartItemDto getCartItemDto() {
-        CartItemDto cartItemDto = new CartItemDto();
-        List<String> models = cartService.getCart().getPhones().keySet()
-                .stream()
-                .map(phone -> phone.getModel())
-                .collect(Collectors.toList());
-        List<String> brands = cartService.getCart().getPhones().keySet()
-                .stream()
-                .map(phone -> phone.getBrand())
-                .collect(Collectors.toList());
-        List<Set<Color>> colors = cartService.getCart().getPhones().keySet()
-                .stream()
-                .map(phone -> phone.getColors())
-                .collect(Collectors.toList());
-        List<BigDecimal> displaySizesInches = cartService.getCart().getPhones().keySet()
-                .stream()
-                .map(phone -> phone.getDisplaySizeInches())
-                .collect(Collectors.toList());
-        List<BigDecimal> prices = cartService.getCart().getPhones().keySet()
-                .stream()
-                .map(phone -> phone.getPrice())
-                .collect(Collectors.toList());
-        List<Long> quantities = cartService.getCart().getPhones().keySet()
-                .stream()
-                .map(phone -> cartService.getCart().getPhones().get(phone))
-                .collect(Collectors.toList());
-        List<Long> ids = cartService.getCart().getPhones().keySet()
-                .stream()
-                .map(phone -> phone.getId())
-                .collect(Collectors.toList());
-        Long totalQuantity = cartService.getCart().getTotalQuantity();
-        cartItemDto.setBrands(brands);
-        cartItemDto.setModels(models);
-        cartItemDto.setColors(colors);
-        cartItemDto.setPrices(prices);
-        cartItemDto.setQuantities(quantities);
-        cartItemDto.setDisplaySizesInches(displaySizesInches);
-        cartItemDto.setTotalQuantity(totalQuantity);
-        cartItemDto.setIds(ids);
-        return cartItemDto;
-    }
+
     @ExceptionHandler(InvalidFormatException.class)
     public QuantityAddToCartDto InvalidFormatException(InvalidFormatException e) {
         QuantityAddToCartDto message = new QuantityAddToCartDto();
         message.setMessage("Quantity must be number");
         message.setErrorStatus(true);
         message.setTotalQuantity(cartService.getCart().getTotalQuantity());
+        message.setTotalPrice(cartService.getCart().getTotalPrice());
         return message;
     }
 
@@ -101,6 +62,7 @@ public class AjaxCartController {
         message.setMessage(e.getMessage());
         message.setErrorStatus(true);
         message.setTotalQuantity(cartService.getCart().getTotalQuantity());
+        message.setTotalPrice(cartService.getCart().getTotalPrice());
         return message;
     }
 }

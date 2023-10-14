@@ -20,7 +20,7 @@
     </thead>
     <tbody>
     <c:forEach var="phone" items="${cart.phones.keySet()}" varStatus="status">
-      <tr>
+      <tr id="row${phone.id}">
           <td>${phone.brand}</td>
           <td>${phone.model}</td>
           <td>
@@ -33,11 +33,8 @@
           <td>
               <form:input path="items[${status.index}].phoneId" type="hidden"/>
               <form:input path="items[${status.index}].quantity"/>
-              <c:if test="${not empty error && error.phoneId eq phone.id}">
-                  <span class="error">${error.message}</span>
-              </c:if>
-              <c:if test="${not empty validationErrors[status.index]}">
-                  <span class="error">${validationErrors[status.index]}</span>
+              <c:if test="${not empty errors[status.index]}">
+                  <span class="error">${errors[status.index]}</span>
               </c:if>
           </td>
           <td><button type="button" onclick="deleteFromCart(${phone.id})">Delete</button></td>
@@ -46,7 +43,9 @@
     </tbody>
   </table>
   <br>
-  <input type="submit" value="Update">
+  <c:if test="${not empty cart.phones}">
+    <input type="submit" value="Update" id="update-btn">
+  </c:if>
 </form:form>
 <br>
 <script>
@@ -61,34 +60,11 @@
       data: JSON.stringify(id),
       dataType: "json",
       success: function(data) {
-        let table = document.querySelector("#phonesTable");
-        let rows = "<thead> <tr> <td>Brand</td> <td>Model</td> <td>Color</td> <td>Display size</td> <td>Price</td> <td>Quantity</td> <td>Action</td> </tr> </thead>";
-        rows += "<tbody>";
-        if(Object.keys(data).length > 0) {
-          for (let i = 0; i < data["brands"].length; i++) {
-            rows += "<tr>";
-            Object.keys(data).forEach((key) => {
-              if (key != "totalQuantity" && key != "quantities" && key != "ids") {
-                  if (key == "colors") {
-                      rows += "<td>";
-                      for (let i = 0; i < data[key][0].length; i++) {
-                          rows += data[key][0][i].code + " ";
-                      }
-                      rows += "</td>";
-                  } else {
-                      rows += "<td>" + data[key][i] + (key == "prices" ? "$" : "") + "</td>";
-                  }
-              }
-            });
-            rows += "<td><input type='text' value='" + data["quantities"][i] + "'></td>";
-            rows += "<td><button type='button' onclick='deleteFromCart(" + data["ids"][i] + ")'>Delete</button></td>";
-            rows += "</tr>";
+          $('#row' + data.phoneId).remove();
+          if(data.cartPhonesAmount == 0) {
+              $('#update-btn').remove();
           }
-        }
-
-        rows += "</tbody>";
-        table.innerHTML = rows;
-        $("#minicart").text("Cart: " + data.totalQuantity);
+          $("#minicart").text("Cart: " + data.totalQuantity + ", " + data.totalPrice + "$");
       }
     });
   }

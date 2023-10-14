@@ -89,7 +89,7 @@
                     message.innerText = "";
                     successMessage.innerText = data.message;
                 }
-                $("#minicart").text("Cart: " + data.totalQuantity);
+                $("#minicart").text("Cart: " + data.totalQuantity + ", " + data.totalPrice + "$");
             }
         });
     }

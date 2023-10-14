@@ -52,12 +52,6 @@ public class HttpSessionCartService implements CartService {
     @Override
     public void update(Map<Long, Long> items) {
         Cart cart = getCart();
-        for (Long phoneId : items.keySet()) {
-            Stock stock = stockDao.getAvailableStock(phoneId);
-            if(stock.getStock() - items.get(phoneId) - stock.getReserved() < 0) {
-                throw new OutOfStockException("Out of stock. Max quantity " + (stock.getStock() - stock.getReserved()), phoneId);
-            }
-        }
         cart.getPhones().clear();
         items.keySet().stream()
                 .map(id -> Map.of(phoneDao.get(id).get(), items.get(id)))
