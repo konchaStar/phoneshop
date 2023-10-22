@@ -48,6 +48,9 @@
     <input type="submit" value="Update" id="update-btn">
   </c:if>
 </form:form>
+<c:if test="${not empty cart.phones}">
+    <button onclick="location.href='${pageContext.servletContext.contextPath}/order'">Order</button>
+</c:if>
 <br>
 <script>
   function deleteFromCart(id) {
