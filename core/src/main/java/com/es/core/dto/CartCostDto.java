@@ -1,5 +1,6 @@
 package com.es.core.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -7,8 +8,8 @@ import java.math.BigDecimal;
 
 @Data
 @NoArgsConstructor
-public class CartDeleteItemDto {
-    private Long phoneId;
+@AllArgsConstructor
+public class CartCostDto {
     private Long totalQuantity;
     private BigDecimal totalPrice;
 }

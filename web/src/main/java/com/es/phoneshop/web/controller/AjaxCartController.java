@@ -1,7 +1,7 @@
 package com.es.phoneshop.web.controller;
 
 import com.es.core.cart.CartService;
-import com.es.core.dto.CartDeleteItemDto;
+import com.es.core.dto.CartCostDto;
 import com.es.core.dto.QuantityAddToCartDto;
 import com.es.core.dto.QuantityCartItemDto;
 import com.es.core.exception.OutOfStockException;
@@ -37,13 +37,11 @@ public class AjaxCartController {
     }
 
     @RequestMapping(method = RequestMethod.DELETE, produces = "application/json")
-    public CartDeleteItemDto deleteCartItem(@RequestBody Long id) {
+    public CartCostDto deleteCartItem(@RequestBody Long id) {
         cartService.remove(id);
-        CartDeleteItemDto cartDeleteItemDto = new CartDeleteItemDto();
-        cartDeleteItemDto.setPhoneId(id);
-        cartDeleteItemDto.setTotalQuantity(cartService.getCart().getTotalQuantity());
-        cartDeleteItemDto.setTotalPrice(cartService.getCart().getTotalPrice());
-        return cartDeleteItemDto;
+        CartCostDto cartCostDto = new CartCostDto(cartService.getCart().getTotalQuantity(),
+                cartService.getCart().getTotalPrice());
+        return cartCostDto;
     }
 
     @ExceptionHandler(InvalidFormatException.class)

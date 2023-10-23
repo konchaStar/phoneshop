@@ -2,6 +2,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <tags:master pageTitle="Cart"></tags:master>
+<script src="resources/scripts/updateMiniCart.js"></script>
 <h3>Cart</h3>
 <button type="button" onclick="location.href = '${pageContext.servletContext.contextPath}/productList'">Back to product list</button><br>
 <br>
@@ -60,11 +61,11 @@
       data: JSON.stringify(id),
       dataType: "json",
       success: function(data) {
-          $('#row' + data.phoneId).remove();
+          $('#row' + id).remove();
           if(data.cartPhonesAmount == 0) {
               $('#update-btn').remove();
           }
-          $("#minicart").text("Cart: " + data.totalQuantity + ", " + data.totalPrice + "$");
+          updateMiniCart(data.totalQuantity, data.totalPrice);
       }
     });
   }

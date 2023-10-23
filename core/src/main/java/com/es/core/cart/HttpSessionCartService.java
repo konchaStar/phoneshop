@@ -52,18 +52,18 @@ public class HttpSessionCartService implements CartService {
     @Override
     public void update(Map<Long, Long> items) {
         Cart cart = getCart();
-        cart.getPhones().clear();
         items.keySet().stream()
-                .map(id -> Map.of(phoneDao.get(id).get(), items.get(id)))
-                .forEach(cart.getPhones()::putAll);
+                .forEach(id -> {
+                    Phone phone = phoneDao.get(id).get();
+                    cart.getPhones().replace(phone, items.get(id));
+                });
         recalculate();
     }
 
     @Override
     public void remove(Long phoneId) {
         Cart cart = getCart();
-        Phone phone = phoneDao.get(phoneId).get();
-        cart.getPhones().remove(phone);
+        phoneDao.get(phoneId).ifPresent(phone -> cart.getPhones().remove(phone));
         recalculate();
     }
 

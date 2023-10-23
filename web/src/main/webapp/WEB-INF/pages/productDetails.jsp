@@ -1,6 +1,8 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="tags" tagdir="/WEB-INF/tags" %>
 <tags:master pageTitle="Product details"/>
+<script src="resources/scripts/addToCart.js"></script>
+<script src="resources/scripts/updateMiniCart.js"></script>
 <br>
 <button onclick="location.href = '${pageContext.servletContext.contextPath}/productList'">Back to product list</button><br>
 <img src="https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/${phone.imageUrl}">
@@ -88,36 +90,9 @@
 <table border="1px">
     <h3>Price ${phone.price}$</h3>
     <form id="addToCart">
-        <input id="quantity" type="text" value="1">
-        <button type="button" onclick="addToCart()">Add</button>
+        <input id="quantity${phone.id}" type="text" value="1">
+        <button type="button" onclick="addToCart(${phone.id}, '${pageContext.servletContext.contextPath}/ajaxCart')">Add</button>
     </form><br>
 </table>
-<span id="message" class="error"></span>
+<span id="message${phone.id}" class="error"></span>
 <span id="successMessage" class="success"></span>
-<script>
-    function addToCart() {
-        let quantity = $('#quantity').val();
-        $.ajax({
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            type: "POST",
-            url: "${pageContext.servletContext.contextPath}/ajaxCart",
-            data: JSON.stringify({phoneId: ${phone.id}, quantity: quantity}),
-            dataType: "json",
-            success: function(data) {
-                const message = document.querySelector("#message");
-                const successMessage = document.querySelector("#successMessage");
-                if (data.errorStatus == true) {
-                    successMessage.innerText = "";
-                    message.innerText = data.message;
-                } else {
-                    message.innerText = "";
-                    successMessage.innerText = data.message;
-                }
-                $("#minicart").text("Cart: " + data.totalQuantity + ", " + data.totalPrice + "$");
-            }
-        });
-    }
-</script>

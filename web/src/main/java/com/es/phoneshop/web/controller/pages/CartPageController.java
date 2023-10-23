@@ -42,6 +42,25 @@ public class CartPageController {
     public String updateCart(@ModelAttribute(ITEMS_DTO_ATTRIBUTE) @Valid CartItemsUpdateDto itemsUpdateDto,
                              BindingResult br, Model model) {
         List<String> errors = new ArrayList<>(Collections.nCopies(itemsUpdateDto.getItems().size(), null));
+        boolean hasErrors = checkErrors(errors, itemsUpdateDto, br);
+        model.addAttribute(ERRORS_ATTRIBUTE, errors);
+        Map<Long, Long> items = new HashMap<>();
+        if(hasErrors) {
+            for(int i = 0; i < errors.size(); i++) {
+                if(errors.get(i) == null) {
+                    items.put(itemsUpdateDto.getItems().get(i).getPhoneId(),
+                            itemsUpdateDto.getItems().get(i).getQuantity());
+                }
+            }
+            cartService.update(items);
+            return "cart";
+        }
+        items = itemsUpdateDto.getItems().stream()
+                .collect(Collectors.toMap(QuantityCartItemDto::getPhoneId, QuantityCartItemDto::getQuantity));
+        cartService.update(items);
+        return "redirect:cart";
+    }
+    private boolean checkErrors(List<String> errors, CartItemsUpdateDto itemsUpdateDto, BindingResult br) {
         boolean hasErrors = false;
         for (int i = 0; i < itemsUpdateDto.getItems().size(); i++) {
             if (br.hasFieldErrors(String.format(ERROR_FIELD, i))) {
@@ -59,13 +78,6 @@ public class CartPageController {
                 }
             }
         }
-        model.addAttribute(ERRORS_ATTRIBUTE, errors);
-        if(!hasErrors) {
-            Map<Long, Long> items = itemsUpdateDto.getItems().stream()
-                        .collect(Collectors.toMap(QuantityCartItemDto::getPhoneId, QuantityCartItemDto::getQuantity));
-            cartService.update(items);
-            return "redirect:cart";
-        }
-        return "cart";
+        return hasErrors;
     }
 }
