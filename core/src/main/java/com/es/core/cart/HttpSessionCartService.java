@@ -51,12 +51,20 @@ public class HttpSessionCartService implements CartService {
 
     @Override
     public void update(Map<Long, Long> items) {
-        throw new UnsupportedOperationException("TODO");
+        Cart cart = getCart();
+        items.keySet().stream()
+                .forEach(id -> {
+                    Phone phone = phoneDao.get(id).get();
+                    cart.getPhones().replace(phone, items.get(id));
+                });
+        recalculate();
     }
 
     @Override
     public void remove(Long phoneId) {
-        throw new UnsupportedOperationException("TODO");
+        Cart cart = getCart();
+        phoneDao.get(phoneId).ifPresent(phone -> cart.getPhones().remove(phone));
+        recalculate();
     }
 
     private void recalculate() {

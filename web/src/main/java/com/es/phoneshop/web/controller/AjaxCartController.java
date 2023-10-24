@@ -1,6 +1,7 @@
 package com.es.phoneshop.web.controller;
 
 import com.es.core.cart.CartService;
+import com.es.core.dto.CartCostDto;
 import com.es.core.dto.QuantityAddToCartDto;
 import com.es.core.dto.QuantityCartItemDto;
 import com.es.core.exception.OutOfStockException;
@@ -31,15 +32,25 @@ public class AjaxCartController {
         }
         message.setPhoneId(cartDto.getPhoneId());
         message.setTotalQuantity(cartService.getCart().getTotalQuantity());
+        message.setTotalPrice(cartService.getCart().getTotalPrice());
         return message;
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE, produces = "application/json")
+    public CartCostDto deleteCartItem(@RequestBody Long id) {
+        cartService.remove(id);
+        CartCostDto cartCostDto = new CartCostDto(cartService.getCart().getTotalQuantity(),
+                cartService.getCart().getTotalPrice());
+        return cartCostDto;
     }
 
     @ExceptionHandler(InvalidFormatException.class)
     public QuantityAddToCartDto InvalidFormatException(InvalidFormatException e) {
         QuantityAddToCartDto message = new QuantityAddToCartDto();
-        message.setMessage("Quantity must be nuber");
+        message.setMessage("Quantity must be number");
         message.setErrorStatus(true);
         message.setTotalQuantity(cartService.getCart().getTotalQuantity());
+        message.setTotalPrice(cartService.getCart().getTotalPrice());
         return message;
     }
 
@@ -49,6 +60,7 @@ public class AjaxCartController {
         message.setMessage(e.getMessage());
         message.setErrorStatus(true);
         message.setTotalQuantity(cartService.getCart().getTotalQuantity());
+        message.setTotalPrice(cartService.getCart().getTotalPrice());
         return message;
     }
 }

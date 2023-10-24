@@ -16,8 +16,16 @@ public class MiniCartController {
     private CartService cartService;
     @RequestMapping(method = RequestMethod.GET)
     public String showMiniCart(Model model) {
+        return addMiniCartAttribute(model);
+    }
+    @RequestMapping(method = RequestMethod.POST)
+    public String showMiniCartPost(Model model) {
+        return addMiniCartAttribute(model);
+    }
+    private String addMiniCartAttribute(Model model) {
         Cart cart = cartService.getCart();
         model.addAttribute("totalQuantity", cart.getTotalQuantity());
+        model.addAttribute("totalPrice", cart.getTotalPrice());
         return "minicart";
     }
 }

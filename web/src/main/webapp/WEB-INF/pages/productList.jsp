@@ -1,9 +1,9 @@
-<%@ page import="java.util.List" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="tags" tagdir="/WEB-INF/tags" %>
 <tags:master pageTitle="ProductList"></tags:master>
-
+<script src="resources/scripts/addToCart.js"></script>
+<script src="resources/scripts/updateMiniCart.js"></script>
 <h4>Phones</h4>
 <span id="successMessage" class="success"></span>
 <form>
@@ -30,7 +30,7 @@
                     <img src="https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/${phone.imageUrl}">
                 </td>
                 <td>${phone.brand}</td>
-                <td>${phone.model}</td>
+                <td><a href="${pageContext.servletContext.contextPath}/productDetails/${phone.id}">${phone.model}</a></td>
                 <td>
                     <c:forEach var="color" items="${phone.colors}">
                         ${color.code}
@@ -43,7 +43,7 @@
                     <span id="message${phone.id}" class="error"></span>
                 </td>
                 <td>
-                    <button type="button" onclick="addToCart(${phone.id})">Add to cart</button>
+                    <button type="button" onclick="addToCart(${phone.id}, '${pageContext.servletContext.contextPath}/ajaxCart')">Add to cart</button>
                 </td>
             </form>
         </tr>
@@ -68,30 +68,3 @@
     <%}%>
     <a href="?page=${pages}${sortParam}${orderParam}${searchParam}">>></a>
 </div>
-<script>
-    function addToCart(phoneId) {
-        let quantity = $('#quantity' + phoneId).val();
-        $.ajax({
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            type: "POST",
-            url: "${pageContext.servletContext.contextPath}/ajaxCart",
-            data: JSON.stringify({phoneId: phoneId, quantity: quantity}),
-            dataType: "json",
-            success: function(data) {
-                const message = document.querySelector("#message" + phoneId);
-                const successMessage = document.querySelector("#successMessage");
-                if(data.errorStatus == true){
-                    successMessage.innerText = "";
-                    message.innerText = data.message;
-                } else {
-                    message.innerText = "";
-                    successMessage.innerText = data.message;
-                }
-                $("#minicart").text("Cart: " + data.totalQuantity);
-            }
-        });
-    }
-</script>

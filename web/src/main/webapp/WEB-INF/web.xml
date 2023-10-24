@@ -18,7 +18,10 @@
     <servlet-name>dispatcher</servlet-name>
     <url-pattern>/</url-pattern>
   </servlet-mapping>
-
+  <error-page>
+    <location>/WEB-INF/pages/productNotFound.jsp</location>
+    <exception-type>com.es.core.exception.ProductNotFoundException</exception-type>
+  </error-page>
   <welcome-file-list>
     <welcome-file>index.jsp</welcome-file>
   </welcome-file-list>
