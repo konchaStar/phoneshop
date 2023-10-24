@@ -4,18 +4,17 @@ import com.es.core.model.order.OrderItem;
 import com.es.core.model.phone.PhoneDao;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+@Component
 public class OrderItemRowMapper implements RowMapper<OrderItem> {
     private static String PHONE_ID = "phoneId";
+    @Resource
     private PhoneDao phoneDao;
-
-    public OrderItemRowMapper(PhoneDao phoneDao) {
-        this.phoneDao = phoneDao;
-    }
 
     @Override
     public OrderItem mapRow(ResultSet resultSet, int i) throws SQLException {

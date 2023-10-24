@@ -48,6 +48,24 @@ public class OrderPageController {
     @RequestMapping(method = RequestMethod.POST)
     public String placeOrder(@ModelAttribute("order") @Valid Order order, BindingResult br, Model model) {
         Map<String, String> validationErrors = new HashMap<>();
+        List<String> outOfStockErrors = new ArrayList<>();
+        Cart cart = cartService.getCart();
+        handleErrors(model, validationErrors, outOfStockErrors, br, cart);
+        Order cartOrder = orderService.createOrder(cart);
+        order.setOrderItems(cartOrder.getOrderItems());
+        if(!(outOfStockErrors.isEmpty() && validationErrors.isEmpty())) {
+            model.addAttribute("outOfStockErrors", outOfStockErrors);
+            return "order";
+        }
+        if(order.getOrderItems().isEmpty()) {
+            return "redirect:productList";
+        }
+        cartService.clear();
+        orderService.placeOrder(order);
+        return "redirect:orderOverview/" + order.getSecureId();
+    }
+    private void handleErrors(Model model, Map<String, String> validationErrors,
+                              List<String> outOfStockErrors, BindingResult br, Cart cart) {
         if(br.hasErrors()) {
             if(br.hasFieldErrors(FIRST_NAME)) {
                 validationErrors.put(FIRST_NAME, br.getFieldError(FIRST_NAME).getDefaultMessage());
@@ -63,8 +81,6 @@ public class OrderPageController {
             }
             model.addAttribute(ERRORS_ATTRIBUTE, validationErrors);
         }
-        List<String> outOfStockErrors = new ArrayList<>();
-        Cart cart = cartService.getCart();
         List<Phone> outOfStockPhones = cart.getPhones().keySet().stream()
                 .filter(phone -> {
                     Stock stock = stockDao.getAvailableStock(phone.getId());
@@ -76,14 +92,5 @@ public class OrderPageController {
                     cartService.remove(phone.getId());
                     outOfStockErrors.add(String.format("Phone %s is out of stock", phone.getModel()));
                 });
-        Order cartOrder = orderService.createOrder(cart);
-        order.setOrderItems(cartOrder.getOrderItems());
-        if(!(outOfStockErrors.isEmpty() && validationErrors.isEmpty())) {
-            model.addAttribute("outOfStockErrors", outOfStockErrors);
-            return "order";
-        }
-        cartService.clear();
-        orderService.placeOrder(order);
-        return "redirect:orderOverview/" + order.getSecureId();
     }
 }

@@ -85,5 +85,13 @@
     <c:if test="${not empty errors['contactPhoneNo']}">
         <span class="error">${errors['contactPhoneNo']}</span><br>
     </c:if>
-    <input type="submit" value="Order">
+    <c:choose>
+        <c:when test="${not empty order.orderItems}">
+            <input type="submit" value="Order">
+        </c:when>
+        <c:otherwise>
+            <span>Empty cart</span><br>
+            <button>Back to shopping</button>
+        </c:otherwise>
+    </c:choose>
 </form:form>

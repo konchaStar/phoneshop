@@ -35,10 +35,10 @@ public class OrderServiceImpl implements OrderService {
     private static final String PHONE_ID = "phoneId";
     private static final String QUANTITY = "quantity";
     private static final String ORDER_ID = "orderId";
+    @Resource
+    OrderItemRowMapper orderItemRowMapper;
     @Value("${delivery.price}")
     private BigDecimal deliveryPrice;
-    @Resource
-    private PhoneDao phoneDao;
     @Resource
     private JdbcTemplate jdbcTemplate;
     @Resource
@@ -48,8 +48,8 @@ public class OrderServiceImpl implements OrderService {
     public Order createOrder(Cart cart) {
         Order order = new Order();
         order.setDeliveryPrice(deliveryPrice);
-        order.setOrderItems(cart.getPhones().keySet().stream()
-                .map(phone -> new OrderItem(phone, cart.getPhones().get(phone)))
+        order.setOrderItems(cart.getPhones().entrySet().stream()
+                .map(entry -> new OrderItem(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList()));
         order.setSubtotal(cart.getTotalPrice());
         order.setTotalPrice(order.getDeliveryPrice().add(order.getSubtotal()));
@@ -84,7 +84,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = jdbcTemplate.queryForObject(SELECT_ORDER, new Object[]{secureId},
                 new BeanPropertyRowMapper<>(Order.class));
         List<OrderItem> orderItems = jdbcTemplate.query(SELECT_ITEM,
-                new Object[]{order.getId()}, new OrderItemRowMapper(phoneDao));
+                new Object[]{order.getId()}, orderItemRowMapper);
         order.setOrderItems(orderItems);
         return order;
     }
