@@ -1,8 +1,8 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="tags" tagdir="/WEB-INF/tags" %>
 <tags:master pageTitle="Product details"/>
-<script src="resources/scripts/addToCart.js"></script>
-<script src="resources/scripts/updateMiniCart.js"></script>
+<script src="${pageContext.servletContext.contextPath}/resources/scripts/addToCart.js"></script>
+<script src="${pageContext.servletContext.contextPath}/resources/scripts/updateMiniCart.js"></script>
 <br>
 <button onclick="location.href = '${pageContext.servletContext.contextPath}/productList'">Back to product list</button><br>
 <img src="https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/${phone.imageUrl}">
