@@ -11,8 +11,6 @@ import javax.validation.constraints.Pattern;
 import java.math.BigDecimal;
 import java.util.List;
 
-@Component
-@Scope(scopeName = "prototype")
 @Data
 @NoArgsConstructor
 public class Order {
@@ -22,7 +20,6 @@ public class Order {
      * A sum of order item prices;
      */
     private BigDecimal subtotal;
-    @Value("${delivery.price}")
     private BigDecimal deliveryPrice;
     private String secureId;
     /**

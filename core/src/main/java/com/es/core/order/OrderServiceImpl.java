@@ -7,7 +7,7 @@ import com.es.core.model.phone.PhoneDao;
 import com.es.core.model.rowmapper.OrderItemRowMapper;
 import com.es.core.model.stock.Stock;
 import com.es.core.model.stock.StockDao;
-import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
@@ -18,26 +18,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 public class OrderServiceImpl implements OrderService {
-    private static String UPDATE_STOCKS = "update stocks set stock=:stock, reserved=:reserved where phoneId=:phoneId";
-    private static String SELECT_ORDER = "select * from orders where secureId = ?";
-    private static String SELECT_ITEM = "select * from orderItems where orderId = ?";
-    private static String ID = "id";
-    private static String ORDERS_TABLE = "orders";
-    private static String ORDER_ITEMS_TABLE = "orderItems";
-    private static String PHONE_ID = "phoneId";
-    private static String QUANTITY = "quantity";
-    private static String ORDER_ID = "orderId";
-
-    @Resource
-    private ObjectFactory<Order> orderObjectFactory;
+    private static final String UPDATE_STOCKS = "update stocks set stock=:stock, reserved=:reserved where phoneId=:phoneId";
+    private static final String SELECT_ORDER = "select * from orders where secureId = ?";
+    private static final String SELECT_ITEM = "select * from orderItems where orderId = ?";
+    private static final String ID = "id";
+    private static final String ORDERS_TABLE = "orders";
+    private static final String ORDER_ITEMS_TABLE = "orderItems";
+    private static final String PHONE_ID = "phoneId";
+    private static final String QUANTITY = "quantity";
+    private static final String ORDER_ID = "orderId";
+    @Value("${delivery.price}")
+    private BigDecimal deliveryPrice;
     @Resource
     private PhoneDao phoneDao;
     @Resource
@@ -47,7 +46,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order createOrder(Cart cart) {
-        Order order = orderObjectFactory.getObject();
+        Order order = new Order();
+        order.setDeliveryPrice(deliveryPrice);
         order.setOrderItems(cart.getPhones().keySet().stream()
                 .map(phone -> new OrderItem(phone, cart.getPhones().get(phone)))
                 .collect(Collectors.toList()));
@@ -56,6 +56,7 @@ public class OrderServiceImpl implements OrderService {
         return order;
     }
 
+    @Transactional
     @Override
     public void placeOrder(Order order) {
         SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbcTemplate);
