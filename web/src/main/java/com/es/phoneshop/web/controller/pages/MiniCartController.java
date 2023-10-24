@@ -21,4 +21,11 @@ public class MiniCartController {
         model.addAttribute("totalPrice", cart.getTotalPrice());
         return "minicart";
     }
+    @RequestMapping(method = RequestMethod.POST)
+    public String showMiniCartPost(Model model) {
+        Cart cart = cartService.getCart();
+        model.addAttribute("totalQuantity", cart.getTotalQuantity());
+        model.addAttribute("totalPrice", cart.getTotalPrice());
+        return "minicart";
+    }
 }
