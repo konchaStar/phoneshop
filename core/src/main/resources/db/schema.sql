@@ -15,6 +15,7 @@ create table orders (
     lastName VARCHAR(50),
     deliveryAddress VARCHAR(100),
     contactPhoneNo VARCHAR(30),
+    status VARCHAR(30),
     UNIQUE (secureId)
 );
 
