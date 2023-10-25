@@ -10,7 +10,7 @@ import java.util.Map;
 
 @Component
 public class JdbcStockDao implements StockDao {
-    private static final String SELECT_STOCK_QUERY = "select stock, reserved from stocks where phoneId = :id";
+    private static final String SELECT_STOCK_QUERY = "select phoneId, stock, reserved from stocks where phoneId = :id";
     @Resource
     private JdbcTemplate jdbcTemplate;
 

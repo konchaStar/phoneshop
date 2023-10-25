@@ -80,4 +80,11 @@ public class HttpSessionCartService implements CartService {
         cart.setTotalQuantity(totalQuantity.longValue());
         cart.setTotalPrice(totalPrice);
     }
+
+    @Override
+    public void clear() {
+        Cart cart = getCart();
+        cart.getPhones().clear();
+        recalculate();
+    }
 }
