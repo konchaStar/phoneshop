@@ -81,11 +81,12 @@ public class OrderPageController {
             }
             model.addAttribute(ERRORS_ATTRIBUTE, validationErrors);
         }
-        List<Phone> outOfStockPhones = cart.getPhones().keySet().stream()
-                .filter(phone -> {
-                    Stock stock = stockDao.getAvailableStock(phone.getId());
-                    return stock.getStock() - stock.getReserved() - cart.getPhones().get(phone) < 0;
+        List<Phone> outOfStockPhones = cart.getPhones().entrySet().stream()
+                .filter(entry -> {
+                    Stock stock = stockDao.getAvailableStock(entry.getKey().getId());
+                    return stock.getStock() - stock.getReserved() - entry.getValue() < 0;
                 })
+                .map(entry -> entry.getKey())
                 .collect(Collectors.toList());
         outOfStockPhones.stream()
                 .forEach(phone -> {
