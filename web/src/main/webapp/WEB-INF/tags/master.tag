@@ -12,6 +12,9 @@
         <h1>Phonify</h1>
     </a>
     <jsp:include page="/cart/minicart"/>
+    <div style="float: right">
+        <a href="${pageContext.servletContext.contextPath}/admin/orders">admin</a>
+    </div>
 </header>
 <main>
     <jsp:doBody/>
