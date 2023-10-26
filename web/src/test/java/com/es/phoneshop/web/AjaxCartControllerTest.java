@@ -2,23 +2,19 @@ package com.es.phoneshop.web;
 
 import com.es.core.cart.Cart;
 import com.es.core.cart.CartService;
+import com.es.core.cart.HttpSessionCartService;
 import com.es.core.dto.QuantityAddToCartDto;
 import com.es.core.dto.QuantityCartItemDto;
-import com.es.core.model.phone.PhoneDao;
-import com.es.core.model.stock.StockDao;
 import com.es.phoneshop.web.controller.AjaxCartController;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
+import org.mockito.*;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.validation.BindingResult;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class AjaxCartControllerTest {
     @Mock
