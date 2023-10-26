@@ -1,9 +1,6 @@
 <%@ taglib prefix="tag" tagdir="/WEB-INF/tags" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <tag:master pageTitle="Orders"/>
-<div style="float: right">
-  <a href="${pageContext.servletContext.contextPath}/productList">Logout</a>
-</div>
 <h3>Orders</h3>
 <table border="1px">
   <thead>

@@ -1,5 +1,6 @@
 <%@ tag trimDirectiveWhitespaces="true" %>
 <%@attribute name="pageTitle" required="true" %>
+<%@ taglib prefix="security" uri="http://www.springframework.org/security/tags" %>
 <html>
 <head>
     <title>${pageTitle}</title>
@@ -13,7 +14,15 @@
     </a>
     <jsp:include page="/cart/minicart"/>
     <div style="float: right">
-        <a href="${pageContext.servletContext.contextPath}/admin/orders">admin</a>
+        <security:authorize access="hasRole('ADMIN')">
+            <a href="${pageContext.servletContext.contextPath}/admin/orders">Admin</a>
+        </security:authorize>
+        <security:authorize access="isAuthenticated()">
+            <a href="${pageContext.servletContext.contextPath}/logout">Logout</a>
+        </security:authorize>
+        <security:authorize access="!isAuthenticated()">
+            <a href="${pageContext.servletContext.contextPath}/login">Login</a>
+        </security:authorize>
     </div>
 </header>
 <main>
