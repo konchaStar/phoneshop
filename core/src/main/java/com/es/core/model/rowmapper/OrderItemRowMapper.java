@@ -12,7 +12,7 @@ import java.sql.SQLException;
 
 @Component
 public class OrderItemRowMapper implements RowMapper<OrderItem> {
-    private static String PHONE_ID = "phoneId";
+    private static final String PHONE_ID = "phoneId";
     @Resource
     private PhoneDao phoneDao;
 

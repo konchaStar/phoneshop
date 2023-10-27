@@ -11,9 +11,9 @@ import javax.validation.constraints.NotNull;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class QuantityCartItemDto {
+public class QuantityPhoneIdDto {
     private Long phoneId;
     @NotNull(message = "Quantity is empty")
     @Min(value = 1l, message = "Quantity must be more than 0")
-    private Long quantity;
+    private Integer quantity;
 }

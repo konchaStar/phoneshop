@@ -10,9 +10,9 @@ public class OrderItem {
     private Long id;
     private Long orderId;
     private Phone phone;
-    private Long quantity;
+    private Integer quantity;
 
-    public OrderItem(Phone phone, Long quantity) {
+    public OrderItem(Phone phone, Integer quantity) {
         this.phone = phone;
         this.quantity = quantity;
     }

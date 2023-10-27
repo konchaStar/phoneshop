@@ -4,6 +4,8 @@ import com.es.core.cart.Cart;
 import com.es.core.cart.CartService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -14,11 +16,11 @@ import javax.annotation.Resource;
 public class MiniCartController {
     @Resource
     private CartService cartService;
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public String showMiniCart(Model model) {
         return addMiniCartAttribute(model);
     }
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public String showMiniCartPost(Model model) {
         return addMiniCartAttribute(model);
     }

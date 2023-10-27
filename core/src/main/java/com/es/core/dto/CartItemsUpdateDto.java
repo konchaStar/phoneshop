@@ -12,12 +12,12 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class CartItemsUpdateDto {
     @Valid
-    private List<QuantityCartItemDto> items;
+    private List<QuantityPhoneIdDto> items;
     public static CartItemsUpdateDto copyFromCart(Cart cart) {
         CartItemsUpdateDto cartItemsUpdateDto = new CartItemsUpdateDto();
         cartItemsUpdateDto.setItems(cart.getPhones().keySet()
                 .stream()
-                .map(phone -> new QuantityCartItemDto(phone.getId(), cart.getPhones().get(phone)))
+                .map(phone -> new QuantityPhoneIdDto(phone.getId(), cart.getPhones().get(phone)))
                 .collect(Collectors.toList()));
         return cartItemsUpdateDto;
     }

@@ -5,15 +5,19 @@ import com.es.core.model.phone.Phone;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Component
 public class PhoneRowMapper implements RowMapper<Phone> {
     private final static String SELECT_COLOR_JOIN_QUERY = "select colors.id, colors.code from colors join phone2color" +
             " on phone2color.colorId = colors.id where phone2color.phoneId = ?";
+    @Resource
     private JdbcTemplate jdbcTemplate;
 
     public PhoneRowMapper(JdbcTemplate jdbcTemplate) {

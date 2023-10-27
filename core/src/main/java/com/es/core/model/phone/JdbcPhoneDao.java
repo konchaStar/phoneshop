@@ -34,8 +34,6 @@ public class JdbcPhoneDao implements PhoneDao {
             "batteryCapacityMah = :batteryCapacityMah, talkTimeHours = :talkTimeHours, " +
             "standByTimeHours = :standByTimeHours, bluetooth = :bluetooth, positioning = :positioning, imageUrl = :imageUrl, " +
             "description = :description where id = :id";
-    private final static String SELECT_COUNT_PHONES_JOIN_STOCKS = "select count(phones.id) from phones join " +
-            "stocks on phones.id = stocks.phoneId where stocks.stock - stocks.reserved > 0 ";
     private final static String SELECT_PHONES_COUNT_QUERY = "select count(phones.id) from phones join " +
             "stocks on phones.id = stocks.phoneId where stocks.stock - stocks.reserved > 0";
     private final static String LIKE_MODEL_CONDITION = "lower(model) like ? ";
@@ -46,13 +44,15 @@ public class JdbcPhoneDao implements PhoneDao {
     private final static String ID_COLUMN = "id";
     private final static String OR = " or ";
     private final static String AND = " and ";
+    private final static String PERCENT = "%";
     @Resource
     private JdbcTemplate jdbcTemplate;
-
+    @Resource
+    private PhoneRowMapper phoneRowMapper;
     public Optional<Phone> get(final Long key) {
         Object[] keyArg = new Object[]{key};
         Optional<Phone> phone = jdbcTemplate.query(SELECT_PHONE_QUERY,
-                        keyArg, new PhoneRowMapper(jdbcTemplate))
+                        keyArg, phoneRowMapper)
                 .stream()
                 .findFirst();
         return phone;
@@ -91,28 +91,28 @@ public class JdbcPhoneDao implements PhoneDao {
         String order = sortOrder == null ? "" : sortOrder.toString();
         if (!search.isEmpty() || !sort.isEmpty()) {
             List<Object> args = new ArrayList<>();
-            String query = getSelectSearchSortQuery(search, sort, order);
+
+            String[] words = search.toLowerCase().split("//s");
+            String query = getSelectSearchSortQuery(words, sort, order);
             if (!search.isEmpty()) {
-                String[] words = search.toLowerCase().split("//s");
                 Arrays.stream(words)
                         .map(word -> "%".concat(word).concat("%"))
                         .forEach(args::add);
             }
             args.add(offset);
             args.add(limit);
-            phones = jdbcTemplate.query(query, args.toArray(), new PhoneRowMapper(jdbcTemplate));
+            phones = jdbcTemplate.query(query, args.toArray(), phoneRowMapper);
         } else {
             Object[] offsetLimitArg = new Object[]{offset, limit};
             phones = jdbcTemplate.query(SELECT_PHONE_OFFSET_QUERY, offsetLimitArg,
-                    new PhoneRowMapper(jdbcTemplate));
+                    phoneRowMapper);
         }
         return phones;
     }
 
-    private String getSelectSearchSortQuery(String search, String sort, String order) {
+    private String getSelectSearchSortQuery(String[] words, String sort, String order) {
         StringBuilder query = new StringBuilder(SELECT_PHONES_JOIN_STOCK);
-        if (!search.isBlank()) {
-            String[] words = search.split("//s");
+        if (words.length > 0) {
             query.append(AND);
             query.append(LIKE_MODEL_CONDITION);
             for (int i = 1; i < words.length; i++) {
@@ -121,7 +121,7 @@ public class JdbcPhoneDao implements PhoneDao {
             }
         }
         if (!sort.isEmpty()) {
-            query.append(ORDER_BY + sort + " " + order + " ");
+            query.append(ORDER_BY).append(sort).append(" ").append(order).append(" ");
         }
         query.append(OFFSET_LIMIT);
         return query.toString();
@@ -132,16 +132,16 @@ public class JdbcPhoneDao implements PhoneDao {
         if (search.isBlank()) {
             return jdbcTemplate.queryForObject(SELECT_PHONES_COUNT_QUERY, Long.class);
         } else {
-            StringBuilder query = new StringBuilder(SELECT_COUNT_PHONES_JOIN_STOCKS);
+            StringBuilder query = new StringBuilder(SELECT_PHONES_COUNT_QUERY);
             List<Object> args = new ArrayList<>();
             String[] words = search.split("//s");
             query.append(AND);
             query.append(LIKE_MODEL_CONDITION);
-            args.add("%".concat(words[0]).concat("%"));
+            args.add(PERCENT.concat(words[0]).concat(PERCENT));
             for (int i = 1; i < words.length; i++) {
                 query.append(OR);
                 query.append(LIKE_MODEL_CONDITION);
-                args.add("%".concat(words[i]).concat("%"));
+                args.add(PERCENT.concat(words[i]).concat(PERCENT));
             }
             return jdbcTemplate.queryForObject(query.toString(), args.toArray(), Long.class);
         }

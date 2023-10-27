@@ -2,7 +2,7 @@ package com.es.phoneshop.web.controller.pages;
 
 import com.es.core.cart.CartService;
 import com.es.core.dto.CartItemsUpdateDto;
-import com.es.core.dto.QuantityCartItemDto;
+import com.es.core.dto.QuantityPhoneIdDto;
 import com.es.core.model.stock.Stock;
 import com.es.core.model.stock.StockDao;
 import org.springframework.stereotype.Controller;
@@ -12,12 +12,11 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.security.KeyPair;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping(value = "/cart")
+@RequestMapping("/cart")
 public class CartPageController {
     private static final String INVALID_FORMAT_DEFAULT_MESSAGE = "Failed to convert property value";
     private static final String INVALID_FORMAT_MESSAGE = "Quantity must be number";
@@ -44,7 +43,7 @@ public class CartPageController {
         List<String> errors = new ArrayList<>(Collections.nCopies(itemsUpdateDto.getItems().size(), null));
         boolean hasErrors = checkErrors(errors, itemsUpdateDto, br);
         model.addAttribute(ERRORS_ATTRIBUTE, errors);
-        Map<Long, Long> items = new HashMap<>();
+        Map<Long, Integer> items = new HashMap<>();
         if(hasErrors) {
             for(int i = 0; i < errors.size(); i++) {
                 if(errors.get(i) == null) {
@@ -56,7 +55,7 @@ public class CartPageController {
             return "cart";
         }
         items = itemsUpdateDto.getItems().stream()
-                .collect(Collectors.toMap(QuantityCartItemDto::getPhoneId, QuantityCartItemDto::getQuantity));
+                .collect(Collectors.toMap(QuantityPhoneIdDto::getPhoneId, QuantityPhoneIdDto::getQuantity));
         cartService.update(items);
         return "redirect:cart";
     }
@@ -70,7 +69,7 @@ public class CartPageController {
                 hasErrors = true;
             } else {
                 Long id = itemsUpdateDto.getItems().get(i).getPhoneId();
-                Long quantity = itemsUpdateDto.getItems().get(i).getQuantity();
+                Integer quantity = itemsUpdateDto.getItems().get(i).getQuantity();
                 Stock stock = stockDao.getAvailableStock(id);
                 if (stock.getStock() - quantity - stock.getReserved() < 0) {
                     errors.set(i, String.format(OUT_OF_STOCK_MESSAGE, stock.getStock() - stock.getReserved()));

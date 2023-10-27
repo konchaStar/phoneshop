@@ -30,17 +30,18 @@ public class HttpSessionCartService implements CartService {
     private StockDao stockDao;
 
     @Override
-    public void addPhone(Long phoneId, Long quantity) {
-        Optional<Phone> phone = phoneDao.get(phoneId);
+    public void addPhone(Long phoneId, Integer quantity) {
+        Optional<Phone> optionalPhone = phoneDao.get(phoneId);
         Cart cart = getCart();
-        if (phone.isPresent()) {
+        if (optionalPhone.isPresent()) {
+            Phone phone = optionalPhone.get();
             Stock stock = stockDao.getAvailableStock(phoneId);
-            Long cartQuantity = Optional.ofNullable(cart.getPhones().get(phone.get())).orElse(0l);
+            Integer cartQuantity = Optional.ofNullable(cart.getPhones().get(phone)).orElse(0);
             if (stock.getStock() - stock.getReserved() - quantity - cartQuantity >= 0) {
-                if (cart.getPhones().containsKey(phone.get())) {
-                    cart.getPhones().replace(phone.get(), cartQuantity + quantity);
+                if (cart.getPhones().containsKey(phone)) {
+                    cart.getPhones().replace(phone, cartQuantity + quantity);
                 } else {
-                    cart.getPhones().put(phone.get(), quantity);
+                    cart.getPhones().put(phone, quantity);
                 }
                 recalculate();
             } else {
@@ -50,16 +51,25 @@ public class HttpSessionCartService implements CartService {
     }
 
     @Override
-    public void update(Map<Long, Long> items) {
+    public void update(Map<Long, Integer> items) {
         Cart cart = getCart();
-        items.keySet().stream()
-                .forEach(id -> {
-                    Phone phone = phoneDao.get(id).get();
-                    cart.getPhones().replace(phone, items.get(id));
+        items.entrySet().stream()
+                .forEach(entry -> {
+                    Optional<Phone> optionalPhone = phoneDao.get(entry.getKey());
+                    if(optionalPhone.isPresent()) {
+                        cart.getPhones().replace(optionalPhone.get(), entry.getValue());
+                    } else {
+                        Phone phone = findPhoneById(entry.getKey());
+                        cart.getPhones().remove(phone);
+                    }
                 });
         recalculate();
     }
-
+    private Phone findPhoneById(Long id) {
+        return getCart().getPhones().keySet().stream()
+                .filter(phone -> phone.getId().equals(id))
+                .findFirst().get();
+    }
     @Override
     public void remove(Long phoneId) {
         Cart cart = getCart();
@@ -69,15 +79,14 @@ public class HttpSessionCartService implements CartService {
 
     private void recalculate() {
         Cart cart = getCart();
-        BigDecimal totalQuantity = BigDecimal.ZERO;
+        Integer totalQuantity = 0;
         BigDecimal totalPrice = BigDecimal.ZERO;
-        for (Phone phone : cart.getPhones().keySet()) {
-            Long quantity = cart.getPhones().get(phone);
-            totalQuantity = totalQuantity.add(BigDecimal.valueOf(quantity));
-            totalPrice = totalPrice.add(phone.getPrice() == null ? BigDecimal.ZERO : phone.getPrice().multiply(
-                    BigDecimal.valueOf(quantity)));
+        for (Map.Entry<Phone, Integer> entry : cart.getPhones().entrySet()) {
+            totalQuantity += entry.getValue();
+            totalPrice = totalPrice.add(Optional.ofNullable(entry.getKey().getPrice()).orElse(BigDecimal.ZERO)
+                    .multiply(BigDecimal.valueOf(entry.getValue())));
         }
-        cart.setTotalQuantity(totalQuantity.longValue());
+        cart.setTotalQuantity(totalQuantity);
         cart.setTotalPrice(totalPrice);
     }
 

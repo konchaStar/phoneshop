@@ -14,7 +14,7 @@ public class LoginPageController {
         return "login";
     }
     @GetMapping
-    @RequestMapping(path="/postLogin")
+    @RequestMapping("/postLogin")
     public String postLogin() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if(auth.isAuthenticated()) {

@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 
 @Data
 @NoArgsConstructor
-public class QuantityAddToCartDto {
+public class AddToCartResponseDto {
     private String message;
     private boolean errorStatus;
     private long totalQuantity;

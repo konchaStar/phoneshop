@@ -13,13 +13,13 @@ import java.util.Map;
 @Scope(scopeName = "session")
 @Data
 public class Cart {
-    private Map<Phone, Long> phones;
-    private Long totalQuantity;
+    private Map<Phone, Integer> phones;
+    private Integer totalQuantity;
     private BigDecimal totalPrice;
 
     public Cart() {
         phones = new HashMap<>();
         totalPrice = BigDecimal.ZERO;
-        totalQuantity = 0L;
+        totalQuantity = 0;
     }
 }

@@ -17,7 +17,7 @@ public class JdbcStockDao implements StockDao {
     @Override
     public Stock getAvailableStock(Long phoneId) {
         NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate.getDataSource());
-        return (Stock) namedParameterJdbcTemplate.queryForObject(SELECT_STOCK_QUERY, Map.of("id", phoneId),
-                new BeanPropertyRowMapper(Stock.class));
+        return namedParameterJdbcTemplate.queryForObject(SELECT_STOCK_QUERY, Map.of("id", phoneId),
+                new BeanPropertyRowMapper<>(Stock.class));
     }
 }

@@ -74,11 +74,11 @@
   </tr>
 </table><br>
 <button onclick="location.href='${pageContext.servletContext.contextPath}/admin/orders'">Back</button><br><br>
-<form method="post">
+<form method="post" action="${pageContext.servletContext.contextPath}/admin/orders/changeStatus/${order.id}">
   <input type="hidden" name="status" value="REJECTED">
   <input type="submit" value="Rejected">
 </form>
-<form method="post">
+<form method="post" action="${pageContext.servletContext.contextPath}/admin/orders/changeStatus/${order.id}">
   <input type="hidden" name="status" value="DELIVERED">
   <input type="submit" value="Delivered">
 </form>
