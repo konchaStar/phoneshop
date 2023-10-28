@@ -96,7 +96,7 @@ public class JdbcPhoneDao implements PhoneDao {
             String query = getSelectSearchSortQuery(words, sort, order);
             if (!search.isEmpty()) {
                 Arrays.stream(words)
-                        .map(word -> "%".concat(word).concat("%"))
+                        .map(word -> PERCENT.concat(word).concat(PERCENT))
                         .forEach(args::add);
             }
             args.add(offset);
@@ -113,13 +113,14 @@ public class JdbcPhoneDao implements PhoneDao {
     private String getSelectSearchSortQuery(String[] words, String sort, String order) {
         StringBuilder query = new StringBuilder(SELECT_PHONES_JOIN_STOCK);
         if (words.length > 0) {
-            query.append(AND);
+            query.append(AND).append("(");
             query.append(LIKE_MODEL_CONDITION);
             for (int i = 1; i < words.length; i++) {
                 query.append(OR);
                 query.append(LIKE_MODEL_CONDITION);
             }
         }
+        query.append(")");
         if (!sort.isEmpty()) {
             query.append(ORDER_BY).append(sort).append(" ").append(order).append(" ");
         }
@@ -135,7 +136,7 @@ public class JdbcPhoneDao implements PhoneDao {
             StringBuilder query = new StringBuilder(SELECT_PHONES_COUNT_QUERY);
             List<Object> args = new ArrayList<>();
             String[] words = search.split("//s");
-            query.append(AND);
+            query.append(AND).append("(");
             query.append(LIKE_MODEL_CONDITION);
             args.add(PERCENT.concat(words[0]).concat(PERCENT));
             for (int i = 1; i < words.length; i++) {
@@ -143,6 +144,7 @@ public class JdbcPhoneDao implements PhoneDao {
                 query.append(LIKE_MODEL_CONDITION);
                 args.add(PERCENT.concat(words[i]).concat(PERCENT));
             }
+            query.append(")");
             return jdbcTemplate.queryForObject(query.toString(), args.toArray(), Long.class);
         }
     }
