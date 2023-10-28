@@ -39,9 +39,8 @@ public class AjaxCartController {
     @DeleteMapping(produces = "application/json")
     public CartCostQuantityDto deleteCartItem(@RequestBody Long id) {
         cartService.remove(id);
-        CartCostQuantityDto cartCostQuantityDto = new CartCostQuantityDto(cartService.getCart().getTotalQuantity(),
+        return new CartCostQuantityDto(cartService.getCart().getTotalQuantity(),
                 cartService.getCart().getTotalPrice());
-        return cartCostQuantityDto;
     }
 
     @ExceptionHandler(InvalidFormatException.class)

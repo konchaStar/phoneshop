@@ -3,9 +3,6 @@ package com.es.core.model.order;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotBlank;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import javax.validation.constraints.Pattern;
 import java.math.BigDecimal;

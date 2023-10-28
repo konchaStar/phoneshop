@@ -1,7 +1,7 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="tags" tagdir="/WEB-INF/tags" %>
-<tags:master pageTitle="ProductList"></tags:master>
+<tags:master pageTitle="ProductList"/>
 <script src="resources/scripts/addToCart.js"></script>
 <script src="resources/scripts/updateMiniCart.js"></script>
 <h4>Phones</h4>
@@ -55,8 +55,8 @@
     <c:set var="searchParam" value="${not empty param.search ? '&search='.concat(param.search) : ''}"/>
     <a href="?page=1${sortParam}${orderParam}${searchParam}"><<</a>
     <% Long pages = (Long) request.getAttribute("pages");
-    Long pg = request.getParameter("page") == null ? 1L : Long.parseLong(request.getParameter("page"));
-    Long pagesAmount = Math.min(pages, 9L);
+    long pg = request.getParameter("page") == null ? 1L : Long.parseLong(request.getParameter("page"));
+    long pagesAmount = Math.min(pages, 9L);
     for (long i = 1; i <= pagesAmount; i++) {
         if(pg < (pagesAmount + 1) / 2) {%>
     <a href="?page=<%=i%>${sortParam}${orderParam}${searchParam}"><%=i%></a>

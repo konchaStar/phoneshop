@@ -53,8 +53,7 @@ public class HttpSessionCartService implements CartService {
     @Override
     public void update(Map<Long, Integer> items) {
         Cart cart = getCart();
-        items.entrySet().stream()
-                .forEach(entry -> {
+        items.entrySet().forEach(entry -> {
                     Optional<Phone> optionalPhone = phoneDao.get(entry.getKey());
                     if(optionalPhone.isPresent()) {
                         cart.getPhones().replace(optionalPhone.get(), entry.getValue());

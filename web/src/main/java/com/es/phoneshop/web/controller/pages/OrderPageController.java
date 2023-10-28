@@ -25,11 +25,11 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping("/order")
 public class OrderPageController {
-    private static String FIRST_NAME = "firstName";
-    private static String LAST_NAME = "lastName";
-    private static String ADDRESS = "deliveryAddress";
-    private static String PHONE = "contactPhoneNo";
-    private static String ERRORS_ATTRIBUTE = "errors";
+    private static final String FIRST_NAME = "firstName";
+    private static final String LAST_NAME = "lastName";
+    private static final String ADDRESS = "deliveryAddress";
+    private static final String PHONE = "contactPhoneNo";
+    private static final String ERRORS_ATTRIBUTE = "errors";
     @Resource
     private CartService cartService;
     @Resource
@@ -41,7 +41,7 @@ public class OrderPageController {
     public String getOrder(Model model) throws OutOfStockException {
         Order order = orderService.createOrder(cartService.getCart());
         OrderDto orderDto = OrderDto.createOrderDto(order);
-        model.addAttribute("order", order);
+        model.addAttribute("order", orderDto);
         return "order";
     }
 
@@ -88,10 +88,9 @@ public class OrderPageController {
                     Stock stock = stockDao.getAvailableStock(entry.getKey().getId());
                     return stock.getStock() - stock.getReserved() - entry.getValue() < 0;
                 })
-                .map(entry -> entry.getKey())
+                .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
-        outOfStockPhones.stream()
-                .forEach(phone -> {
+        outOfStockPhones.forEach(phone -> {
                     cartService.remove(phone.getId());
                     outOfStockErrors.add(String.format("Phone %s is out of stock", phone.getModel()));
                 });

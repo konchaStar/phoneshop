@@ -1,7 +1,7 @@
 <%@ taglib prefix="tags" tagdir="/WEB-INF/tags" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
-<tags:master pageTitle="Cart"></tags:master>
+<tags:master pageTitle="Cart"/>
 <script src="resources/scripts/updateMiniCart.js"></script>
 <h3>Cart</h3>
 <button type="button" onclick="location.href = '${pageContext.servletContext.contextPath}/productList'">Back to product list</button><br>

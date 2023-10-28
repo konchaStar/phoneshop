@@ -14,6 +14,6 @@ import javax.validation.constraints.NotNull;
 public class QuantityPhoneIdDto {
     private Long phoneId;
     @NotNull(message = "Quantity is empty")
-    @Min(value = 1l, message = "Quantity must be more than 0")
+    @Min(value = 1L, message = "Quantity must be more than 0")
     private Integer quantity;
 }

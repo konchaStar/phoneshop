@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 public class JdbcPhoneDao implements PhoneDao {
@@ -51,11 +50,10 @@ public class JdbcPhoneDao implements PhoneDao {
     private PhoneRowMapper phoneRowMapper;
     public Optional<Phone> get(final Long key) {
         Object[] keyArg = new Object[]{key};
-        Optional<Phone> phone = jdbcTemplate.query(SELECT_PHONE_QUERY,
+        return jdbcTemplate.query(SELECT_PHONE_QUERY,
                         keyArg, phoneRowMapper)
                 .stream()
                 .findFirst();
-        return phone;
     }
 
 
@@ -76,13 +74,12 @@ public class JdbcPhoneDao implements PhoneDao {
 
     private void saveColors(final Phone phone) {
         jdbcTemplate.update(DELETE_PHONE2COLOR_QUERY, phone.getId());
-        List<SqlParameterSource> parameterSources = phone.getColors().stream()
-                .map(color -> new MapSqlParameterSource(Map.of(PHONE_ID_COLUMN, phone.getId(),
-                        COLOR_ID_COLUMN, color.getId()))
-                ).collect(Collectors.toList());
         NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(jdbcTemplate.getDataSource());
         template.batchUpdate(INSERT_PHONE2COLOR_QUERY,
-                parameterSources.toArray(new SqlParameterSource[0]));
+                phone.getColors().stream()
+                        .map(color -> new MapSqlParameterSource(Map.of(PHONE_ID_COLUMN, phone.getId(),
+                                COLOR_ID_COLUMN, color.getId()))
+                        ).toArray(SqlParameterSource[]::new));
     }
 
     public List<Phone> findAll(String search, SortType type, SortOrder sortOrder, int offset, int limit) {

@@ -21,7 +21,7 @@
         <property name="dataSource" ref="dataSource" />
     </bean>
 
-    <jdbc:initialize-database enabled="${db.insertSchema}" data-source="dataSource">
+    <jdbc:initialize-database enabled="${db.insertSchema}">
         <jdbc:script location="classpath:db/schema-test.sql"/>
         <jdbc:script location="classpath:db/demodata-test.sql" />
     </jdbc:initialize-database>

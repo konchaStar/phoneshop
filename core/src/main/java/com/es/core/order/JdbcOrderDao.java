@@ -58,7 +58,7 @@ public class JdbcOrderDao implements OrderDao {
                     .execute(Map.of(PHONE_ID, item.getPhone().getId(), QUANTITY, item.getQuantity(),
                             ORDER_ID, item.getOrderId()));
             Stock stock = stockDao.getAvailableStock(item.getPhone().getId());
-            Integer reserved = stock.getReserved() + item.getQuantity().intValue();
+            Integer reserved = stock.getReserved() + item.getQuantity();
             stock.setReserved(reserved);
             template.batchUpdate(UPDATE_STOCKS,
                     new SqlParameterSource[]{new BeanPropertySqlParameterSource(stock)});

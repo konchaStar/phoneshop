@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -33,9 +34,7 @@ public class PhoneRowMapper implements RowMapper<Phone> {
     }
 
     private Set<Color> getColorSet(final Phone phone) {
-        return jdbcTemplate.query(SELECT_COLOR_JOIN_QUERY,
-                        new Object[]{phone.getId()}, new BeanPropertyRowMapper<>(Color.class))
-                .stream()
-                .collect(Collectors.toSet());
+        return new HashSet<>(jdbcTemplate.query(SELECT_COLOR_JOIN_QUERY,
+                new Object[]{phone.getId()}, new BeanPropertyRowMapper<>(Color.class)));
     }
 }

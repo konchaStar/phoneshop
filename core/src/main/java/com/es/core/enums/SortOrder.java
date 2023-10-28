@@ -6,7 +6,7 @@ public enum SortOrder {
     ASC, DESC;
     public static SortOrder getValue(String name) {
         return Arrays.stream(SortOrder.values())
-                .filter(value -> value.toString().toLowerCase().equals(name.toLowerCase()))
+                .filter(value -> value.toString().equalsIgnoreCase(name))
                 .findAny()
                 .orElse(null);
     }
