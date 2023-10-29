@@ -1,6 +1,7 @@
 package com.es.core.cart;
 
 import com.es.core.exception.OutOfStockException;
+import com.es.core.exception.ProductNotFoundException;
 import com.es.core.model.phone.Phone;
 import com.es.core.model.phone.PhoneDao;
 import com.es.core.model.stock.Stock;
@@ -67,7 +68,7 @@ public class HttpSessionCartService implements CartService {
     private Phone findPhoneById(Long id) {
         return getCart().getPhones().keySet().stream()
                 .filter(phone -> phone.getId().equals(id))
-                .findFirst().get();
+                .findFirst().orElseThrow(() -> new ProductNotFoundException("Phone wasn't found"));
     }
     @Override
     public void remove(Long phoneId) {

@@ -65,7 +65,7 @@
       dataType: "json",
       success: function(data) {
           $('#row' + id).remove();
-          if(data.cartPhonesAmount == 0) {
+          if(data.cartPhonesAmount === 0) {
               $('#update-btn').remove();
           }
           updateMiniCart(data.totalQuantity, data.totalPrice);

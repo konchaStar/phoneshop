@@ -12,7 +12,7 @@ function addToCart(phoneId, url) {
         success: function(data) {
             const message = document.querySelector("#message" + phoneId);
             const successMessage = document.querySelector("#successMessage");
-            if (data.errorStatus == true) {
+            if (data.errorStatus === true) {
                 successMessage.innerText = "";
                 message.innerText = data.message;
             } else {

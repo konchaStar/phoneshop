@@ -109,15 +109,15 @@ public class JdbcPhoneDao implements PhoneDao {
 
     private String getSelectSearchSortQuery(String[] words, String sort, String order) {
         StringBuilder query = new StringBuilder(SELECT_PHONES_JOIN_STOCK);
-        if (words.length > 0) {
+        if (words.length > 0 && !words[0].isBlank()) {
             query.append(AND).append("(");
             query.append(LIKE_MODEL_CONDITION);
             for (int i = 1; i < words.length; i++) {
                 query.append(OR);
                 query.append(LIKE_MODEL_CONDITION);
             }
+            query.append(")");
         }
-        query.append(")");
         if (!sort.isEmpty()) {
             query.append(ORDER_BY).append(sort).append(" ").append(order).append(" ");
         }
