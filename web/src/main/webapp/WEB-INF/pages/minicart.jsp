@@ -1,0 +1,1 @@
+<a href="${pageContext.servletContext.contextPath}/cart" id="minicart">Cart: ${totalQuantity}, ${totalPrice}$</a>
