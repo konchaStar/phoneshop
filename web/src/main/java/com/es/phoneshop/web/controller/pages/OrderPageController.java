@@ -61,7 +61,7 @@ public class OrderPageController {
             return "redirect:productList";
         }
         cartService.clear();
-        Order order = orderDto.createOrder();
+        Order order = orderService.createOrderByDto(orderDto);
         orderService.placeOrder(order);
         return "redirect:orderOverview/" + order.getSecureId();
     }
