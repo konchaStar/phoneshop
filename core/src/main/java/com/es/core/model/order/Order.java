@@ -23,14 +23,9 @@ public class Order {
      * <code>subtotal</code> + <code>deliveryPrice</code>
      */
     private BigDecimal totalPrice;
-    @NotBlank(message = "Name is required")
     private String firstName;
-    @NotBlank(message = "Surname is required")
     private String lastName;
-    @NotBlank(message = "Address is required")
     private String deliveryAddress;
-    @NotBlank(message = "Phone is required")
-    @Pattern(regexp = "\\+375(33|29|25|44)\\d{7}", message = "Invalid phone number")
     private String contactPhoneNo;
 
     private OrderStatus status;

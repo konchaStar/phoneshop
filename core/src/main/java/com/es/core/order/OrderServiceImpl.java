@@ -1,6 +1,7 @@
 package com.es.core.order;
 
 import com.es.core.cart.Cart;
+import com.es.core.dto.OrderDto;
 import com.es.core.model.order.Order;
 import com.es.core.model.order.OrderItem;
 import com.es.core.model.order.OrderStatus;
@@ -30,6 +31,21 @@ public class OrderServiceImpl implements OrderService {
                 .collect(Collectors.toList()));
         order.setSubtotal(cart.getTotalPrice());
         order.setTotalPrice(order.getDeliveryPrice().add(order.getSubtotal()));
+        return order;
+    }
+
+    @Override
+    public Order createOrderByDto(OrderDto orderDto) {
+        Order order = new Order();
+        order.setOrderItems(orderDto.getOrderItems());
+        order.setStatus(orderDto.getStatus());
+        order.setDeliveryPrice(orderDto.getDeliveryPrice());
+        order.setTotalPrice(orderDto.getTotalPrice());
+        order.setSubtotal(orderDto.getSubtotal());
+        order.setFirstName(orderDto.getFirstName());
+        order.setLastName(orderDto.getLastName());
+        order.setContactPhoneNo(orderDto.getContactPhoneNo());
+        order.setDeliveryAddress(order.getDeliveryAddress());
         return order;
     }
 

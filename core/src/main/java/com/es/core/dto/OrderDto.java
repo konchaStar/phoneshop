@@ -30,19 +30,7 @@ public class OrderDto {
     private String contactPhoneNo;
 
     private OrderStatus status;
-    public Order createOrder() {
-        Order order = new Order();
-        order.setOrderItems(orderItems);
-        order.setStatus(status);
-        order.setDeliveryPrice(deliveryPrice);
-        order.setTotalPrice(totalPrice);
-        order.setSubtotal(subtotal);
-        order.setFirstName(firstName);
-        order.setLastName(lastName);
-        order.setContactPhoneNo(contactPhoneNo);
-        order.setDeliveryAddress(deliveryAddress);
-        return order;
-    }
+
     public static OrderDto createOrderDto(Order order) {
         OrderDto orderDto = new OrderDto();
         orderDto.setId(order.getId());
