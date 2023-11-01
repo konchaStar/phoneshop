@@ -23,6 +23,7 @@ public class JdbcPhoneDao implements PhoneDao {
     private final static String OFFSET_LIMIT = "offset ? limit ?";
     private final static String SELECT_PHONES_JOIN_STOCK = "select * from phones join stocks on phones.id " +
             "= stocks.phoneId where stocks.stock - stocks.reserved > 0";
+    private final static String SELECT_BRAND_PHONE_QUERY = "select * from phones where lower(model)=?";
     private final static String SELECT_PHONE_OFFSET_QUERY = SELECT_PHONES_JOIN_STOCK + OFFSET_LIMIT;
     private final static String UPDATE_QUERY = "update phones set id = :id, brand = :brand, model = :model, price = :price," +
             " displaySizeInches = :displaySizeInches, weightGr = :weightGr, lengthMm = :lengthMm," +
@@ -48,6 +49,7 @@ public class JdbcPhoneDao implements PhoneDao {
     private JdbcTemplate jdbcTemplate;
     @Resource
     private PhoneRowMapper phoneRowMapper;
+
     public Optional<Phone> get(final Long key) {
         Object[] keyArg = new Object[]{key};
         return jdbcTemplate.query(SELECT_PHONE_QUERY,
@@ -56,6 +58,13 @@ public class JdbcPhoneDao implements PhoneDao {
                 .findFirst();
     }
 
+    @Override
+    public Optional<Phone> getByModel(String model) {
+        return jdbcTemplate.query(SELECT_BRAND_PHONE_QUERY,
+                        new Object[]{model.toLowerCase()}, phoneRowMapper)
+                .stream()
+                .findFirst();
+    }
 
     public void save(final Phone phone) {
         boolean notExisted = jdbcTemplate.query(SELECT_PHONE_QUERY, new Object[]{phone.getId()},
