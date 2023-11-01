@@ -4,6 +4,8 @@
 <tags:master pageTitle="ProductList"/>
 <script src="resources/scripts/addToCart.js"></script>
 <script src="resources/scripts/updateMiniCart.js"></script>
+<br>
+<a href="${pageContext.servletContext.contextPath}/quickCart">Quick cart</a>
 <h4>Phones</h4>
 <span id="successMessage" class="success"></span>
 <form>
